@@ -1,0 +1,30 @@
+/*
+ Theme Name:   Astra Child
+ Theme URI:    https://chambaynegocios.com
+ Description:  Tema hijo para el sitio Avisos Perú
+ Author:       Tu Nombre
+ Author URI:   https://chambaynegocios.com
+ Template:     astra
+ Version:      2.0.0
+ License:      GNU General Public License v2 or later
+ License URI:  http://www.gnu.org/licenses/gpl-2.0.html
+ Text Domain:  astra-child
+*/
+
+/**
+ * ESTE ARCHIVO YA NO CONTIENE ESTILOS DIRECTOS.
+ * Los estilos ahora se cargan desde la carpeta /assets/css/
+ * y se gestionan a través de functions.php
+ *
+ * Aquí solo definimos variables globales para que estén
+ * disponibles en todos los demás archivos CSS.
+ */
+
+:root {
+    --ap-marca-primario: #D3542B; /* Naranja/Rojo Ladrillo */
+    --ap-marca-secundario: #076445; /* Verde Oscuro */
+    --ap-color-ayuda-ia: #1a73e8; /* Azul para el botón de IA */
+    --ap-borde-suave: #d1d5db;
+    --ap-fondo-suave: #f9fafb;
+    --ap-radio-borde: 6px; /* Para tener bordes redondeados consistentes */
+}

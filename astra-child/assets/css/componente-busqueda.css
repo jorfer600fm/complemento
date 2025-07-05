@@ -1,0 +1,127 @@
+/**
+ * ===================================================================
+ * MÓDULO: COMPONENTE DE BÚSQUEDA
+ * ===================================================================
+ */
+
+.ap-search-form-container {
+    padding: 2em;
+    background-color: var(--ap-fondo-suave);
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    margin: 2em auto;
+}
+
+.ap-search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Selector de ámbito (Todo Perú / Por Departamento) */
+.ap-search-scope-selector {
+    display: flex;
+    gap: 10px;
+    padding: 6px;
+    background-color: #e9ecef;
+    border-radius: var(--ap-radio-borde);
+    width: fit-content;
+}
+
+.ap-search-scope-selector label {
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.ap-search-scope-selector input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.ap-search-scope-selector span {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.ap-search-scope-selector input[type="radio"]:checked + span {
+    background-color: #ffffff;
+    color: var(--ap-marca-secundario);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-weight: 700;
+}
+
+/* Panel principal que contiene el grupo de búsqueda y el dropdown */
+.ap-search-main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+/* --- NUEVO: Grupo que une la barra de texto y el botón --- */
+.ap-search-input-group {
+    display: flex;
+    width: 100%;
+}
+
+.ap-search-field {
+    flex-grow: 1; /* El campo de texto ocupa todo el espacio posible */
+    padding: 14px 20px;
+    font-size: 16px;
+    border: 1px solid var(--ap-borde-suave);
+    border-right: none; /* Quitamos el borde derecho para unirlo al botón */
+    /* Bordes redondeados solo a la izquierda */
+    border-radius: 50px 0 0 50px;
+    min-width: 0; /* Necesario para que flexbox no lo desborde */
+}
+.ap-search-field:focus {
+    outline: none;
+    border-color: var(--ap-marca-secundario);
+    box-shadow: 0 0 0 3px rgba(7, 100, 69, 0.15);
+}
+
+.ap-search-submit {
+    flex-shrink: 0; /* El botón no se encoge */
+    padding: 0 25px;
+    border: 1px solid var(--ap-marca-secundario);
+    /* Bordes redondeados solo a la derecha */
+    border-radius: 0 50px 50px 0;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    background-color: var(--ap-marca-secundario);
+    color: white;
+}
+
+/* Dropdown de Departamentos */
+.ap-department-wrapper{
+    width: 100%;
+}
+
+.ap-department-select {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px;
+    border-radius: var(--ap-radio-borde);
+    border: 1px solid var(--ap-borde-suave);
+}
+
+/* ----- MEDIA QUERY PARA ESCRITORIO ----- */
+@media (min-width: 992px) {
+    .ap-search-form {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .ap-search-scope-selector {
+        flex-shrink: 0;
+    }
+
+    .ap-search-main-panel {
+        flex-grow: 1;
+    }
+}

@@ -1,0 +1,245 @@
+/**
+ * ===================================================================
+ * MÓDULO: PÁGINA DE RESULTADOS DE BÚSQUEDA (v4 - Reconstrucción)
+ * ===================================================================
+ */
+
+/* 1. Cabecera y Layout Principal */
+.ap-results-header {
+    margin-bottom: 2.5em;
+}
+
+.ap-results-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* 2. Barra Lateral de Filtros */
+.ap-results-sidebar {
+    flex-shrink: 0;
+}
+
+.ap-filter-form {
+    background-color: var(--ap-fondo-suave, #f9fafb);
+    padding: 25px;
+    border-radius: var(--ap-radio-borde, 8px);
+    border: 1px solid #e5e5e5;
+    position: sticky;
+    top: 40px; /* Espacio desde la parte superior */
+}
+
+.ap-filter-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.4em;
+    color: var(--ap-marca-secundario, #076445);
+}
+
+.ap-filter-block {
+    margin-bottom: 25px;
+}
+.ap-filter-block:last-of-type {
+    margin-bottom: 0;
+}
+
+.ap-filter-block h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1em;
+    font-weight: 700;
+}
+
+.ap-filter-block label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+.ap-filter-block input[type="checkbox"] {
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.ap-filter-block .price-inputs {
+    display: flex;
+    gap: 10px;
+}
+.ap-filter-block .price-inputs input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--ap-borde-suave, #d1d5db);
+    border-radius: var(--ap-radio-borde, 6px);
+}
+
+.ap-apply-filters-btn {
+    width: 100%;
+    padding: 14px;
+    font-weight: bold;
+    background-color: var(--ap-marca-primario, #D3542B);
+    color: #fff;
+    border: none;
+    border-radius: var(--ap-radio-borde, 6px);
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    margin-top: 15px;
+    transition: background-color 0.3s;
+}
+.ap-apply-filters-btn:hover {
+    background-color: #b94825;
+}
+
+/* 3. Lista de Resultados y Tarjetas Individuales */
+.ap-result-card {
+    background-color: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: var(--ap-radio-borde, 8px);
+    margin-bottom: 25px;
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+.ap-result-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+}
+
+.ap-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+}
+
+.ap-card-thumb {
+    width: 100%;
+    height: 220px;
+    background-color: #f0f0f0;
+}
+.ap-card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ap-card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.ap-card-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.5em;
+    color: #111;
+    line-height: 1.3;
+}
+
+.ap-card-excerpt {
+    color: #555;
+    font-size: 0.95em;
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.ap-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 15px;
+    margin-top: auto;
+}
+
+.ap-card-price {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--ap-marca-secundario, #076445);
+}
+.ap-card-price span {
+    font-size: 0.7em;
+    font-weight: 400;
+    color: #666;
+}
+
+.ap-card-location {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.ap-card-badges {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+.ap-badge-destacado, .ap-badge-verificado {
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 0.8em;
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.ap-badge-destacado {
+    background-color: var(--ap-marca-primario, #D3542B);
+}
+.ap-badge-verificado {
+    background-color: var(--ap-marca-secundario, #076445);
+}
+
+/* 4. Paginación y Mensaje de 'No Resultados' */
+.ap-pagination .nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.ap-pagination .page-numbers {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.ap-pagination .page-numbers.current {
+    background-color: var(--ap-marca-secundario, #076445);
+    color: #fff;
+    border-color: var(--ap-marca-secundario, #076445);
+}
+
+.ap-no-results {
+    text-align: center;
+    padding: 40px;
+    background-color: var(--ap-fondo-suave, #f9fafb);
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+}
+
+/* 5. Layout para Escritorio (Responsive) */
+@media (min-width: 992px) {
+    .ap-results-layout {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    .ap-results-sidebar {
+        width: 280px;
+    }
+    .ap-results-list {
+        flex-grow: 1;
+    }
+    .ap-card-link {
+        flex-direction: row;
+    }
+    .ap-card-thumb {
+        width: 250px; /* Imagen más grande */
+        height: auto;
+    }
+}

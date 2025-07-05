@@ -1,0 +1,147 @@
+/**
+ * ===================================================================
+ * MÓDULO: FORMULARIO DE PUBLICACIÓN DE AVISOS (v2 - Astra Override)
+ * ESTE ARCHIVO CENTRALIZA TODOS LOS ESTILOS DEL FORMULARIO
+ * ===================================================================
+ */
+
+.ap-form-container {
+    max-width: 800px;
+    margin: 2em auto;
+}
+
+.ap-form-field {
+    margin-bottom: 24px;
+}
+
+.ap-form-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #374151;
+}
+
+.ap-form-field input[type="text"],
+.ap-form-field input[type="email"],
+.ap-form-field input[type="tel"],
+.ap-form-field input[type="url"],
+.ap-form-field input[type="date"],
+.ap-form-field textarea,
+.ap-form-field select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db; /* var(--ap-borde-suave) */
+    border-radius: 6px; /* var(--ap-radio-borde) */
+    background-color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    min-height: 48px; 
+}
+
+.ap-form-field textarea {
+    min-height: 120px;
+}
+
+.ap-form-field input:focus,
+.ap-form-field textarea:focus,
+.ap-form-field select:focus {
+    outline: none;
+    border-color: #076445; /* var(--ap-marca-secundario) */
+    box-shadow: 0 0 0 3px rgba(7, 100, 69, 0.15);
+}
+
+.ap-form-field small {
+    margin-top: 6px;
+    display: inline-block;
+    color: #6b7280;
+}
+
+.ap-form-row {
+    display: flex;
+    gap: 24px;
+}
+
+/* --- ESTILOS MEJORADOS --- */
+
+/* 1. Estilo para los Checkbox/Radio como Switches */
+.ap-choice-switch {
+    background-color: #e9ecef;
+    border-radius: 50px;
+    display: inline-flex;
+    padding: 5px;
+    border: 1px solid #ddd;
+}
+.ap-choice-switch label {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 0;
+}
+.ap-choice-switch input {
+    opacity: 0 !important;
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform: none !important; /* Reset para estos inputs */
+}
+.ap-choice-switch span {
+    display: block;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #495057;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: all 0.3s ease-in-out;
+}
+.ap-choice-switch input:checked + span {
+    background-color: #076445; /* var(--ap-marca-secundario) */
+    color: #fff !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 2. Aumentar tamaño de TODOS los Checkbox */
+.ap-form-container input[type="checkbox"] {
+    width: 1.8em !important;
+    height: 1.8em !important;
+    margin-right: 12px !important;
+    vertical-align: middle !important;
+    transform: none !important; /* Evitar conflictos con otros scale */
+}
+
+/* 3. Aumentar icono de fecha */
+.ap-form-container input[type="date"]::-webkit-calendar-picker-indicator {
+    padding: 5px;
+    cursor: pointer;
+    transform: scale(1.5);
+}
+
+/* 4. Estilo de caja llamativa para errores */
+#ap-form-feedback .ap-error {
+    background-color: #fff5f5 !important;
+    border: 2px solid #D3542B !important; /* var(--ap-marca-primario) */
+    padding: 20px !important;
+    border-radius: 8px !important;
+    margin-top: 20px !important;
+    color: #D3542B !important; /* Texto en rojo de marca */
+    font-weight: 700 !important;
+    font-size: 1.1em !important;
+}
+#ap-form-feedback .ap-error::before {
+    content: "¡Atención! ";
+    font-weight: 900;
+}
+
+/* --- ESTILOS ANTERIORES DEL FORMULARIO (MANTENER) --- */
+.ap-form-row .ap-form-field { flex: 1; }
+.ap-file-upload-wrapper { margin-bottom: 20px; border: 1px dashed #d1d5db; padding: 20px; border-radius: 6px; background-color: #f9fafb; }
+.ap-file-upload-wrapper input[type="file"] { display: none; }
+.ap-file-upload-wrapper .ap-file-label { display: inline-block; padding: 10px 20px; background-color: #D3542B; color: #ffffff; border-radius: 6px; font-weight: bold; cursor: pointer; }
+.ap-file-info { display: flex; align-items: center; margin-top: 12px; padding: 10px 15px; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; }
+.ap-file-info span { font-family: monospace; font-size: 14px; flex-grow: 1; }
+.ap-file-clear-btn { background: none !important; border: none !important; color: #e53e3e !important; font-weight: bold !important; font-size: 22px !important; padding: 0 5px !important; margin-left: 10px !important; cursor: pointer; line-height: 1; width: auto; height: auto; border-radius: 0; transform: none; transition: color 0.2s ease; }
+.ap-file-clear-btn:hover { color: #c53030 !important; transform: none; }
+#ap-map-container { border: 1px solid #d1d5db; padding: 15px; border-radius: 6px; }
+#ap_confirm_map_coords { background-color: #076445; color: #ffffff; border: none; padding: 10px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+#ap-submit-button { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background-color: #076445 !important; color: #ffffff !important; border: none !important; border-radius: 6px; cursor: pointer; }
+#ap-submit-button:disabled { background-color: #999 !important; cursor: not-allowed; }
+.ap-terms-field label { display: flex; align-items: center; cursor: pointer; }
+.ap-terms-field input[type="checkbox"] { flex-shrink: 0; }
