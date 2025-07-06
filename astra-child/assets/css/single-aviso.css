@@ -1,0 +1,92 @@
+/**
+ * ===================================================================
+ * MÓDULO: PÁGINA DE DETALLE DE AVISO (v2.0 - Versión Final)
+ * ===================================================================
+ */
+
+:root {
+    --ap-color-primario: #D3542B;
+    --ap-color-secundario: #076445;
+    --ap-fondo-claro: #f9fafb;
+    --ap-borde-suave: #e5e7eb;
+    --ap-texto-principal: #1f2937;
+    --ap-texto-secundario: #6b7280;
+}
+
+/* --- ESTRUCTURA PRINCIPAL --- */
+.ap-detalle-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+@media (min-width: 992px) {
+    .ap-detalle-layout {
+        /* Columnas: 60% para contenido, 40% para barra lateral */
+        grid-template-columns: 3fr 2fr;
+    }
+}
+
+/* --- COLUMNA PRINCIPAL (IZQUIERDA) --- */
+.ap-columna-principal .ap-section {
+    margin-bottom: 2.5em;
+}
+
+/* Galería de Medios */
+.ap-media-gallery { display: flex; flex-direction: column; gap: 15px; }
+#ap-main-media-viewer { border: 1px solid var(--ap-borde-suave); border-radius: 8px; overflow: hidden; background-color: #000; }
+#ap-main-media-viewer iframe,
+#ap-main-media-viewer video,
+#ap-main-media-viewer img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+    display: block;
+}
+#ap-main-media-viewer img { object-fit: contain; background-color: #f0f0f0; }
+.ap-media-thumbnails { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+.ap-media-thumbnail {
+    display: block;
+    width: 100%;
+    height: 80px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.ap-media-thumbnail:hover { border-color: var(--ap-color-primario); }
+.ap-media-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Secciones de Contenido */
+.ap-section h3.ap-section-title { font-size: 1.8em; color: var(--ap-texto-principal); margin-top: 0; margin-bottom: 0.8em; padding-bottom: 0.5em; border-bottom: 2px solid var(--ap-color-secundario); }
+.ap-detalles-lista ul { list-style: none; padding: 0; margin: 0; }
+.ap-detalles-lista li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--ap-borde-suave); font-size: 1.1em; }
+.ap-detalles-lista li strong { color: var(--ap-texto-principal); }
+
+/* --- BARRA LATERAL (DERECHA) --- */
+.ap-columna-lateral { position: sticky; top: 40px; }
+.ap-info-box { background-color: #fff; border: 1px solid var(--ap-borde-suave); border-radius: 8px; padding: 25px; margin-bottom: 20px; }
+h1.ap-titulo-principal { font-size: 2.0em; line-height: 1.3; margin-top: 0; margin-bottom: 0.5em; color: var(--ap-texto-principal); }
+.ap-badges-container { display: flex; gap: 10px; margin-bottom: 20px; }
+.ap-badge-detalle { padding: 4px 12px; border-radius: 50px; font-weight: bold; font-size: 0.8em; }
+.ap-badge-destacado { background-color: #fef9c3; color: #a16207; border: 1px solid #fde047; }
+.ap-badge-verificado { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.ap-precio { font-size: 2.5em; font-weight: 700; color: var(--ap-color-secundario); margin-bottom: 20px; }
+.ap-precio span.ap-unidad { font-size: 0.5em; font-weight: 400; color: var(--ap-texto-secundario); }
+.ap-autor { font-size: 1.1em; margin-bottom: 20px; }
+
+/* Botones */
+.ap-botones-contacto a { display: block; width: 100%; text-align: center; padding: 15px; margin-bottom: 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 1.1em; transition: opacity 0.3s; }
+.ap-botones-contacto a:hover { opacity: 0.85; }
+a.ap-btn-whatsapp { background-color: #25D366; color: #fff; }
+a.ap-btn-llamar { background-color: var(--ap-color-primario); color: #fff; }
+a.ap-btn-pdf { background-color: #fff; color: var(--ap-color-primario); border: 2px solid var(--ap-color-primario); }
+a.ap-btn-website { background-color: #fff; color: var(--ap-texto-principal); border: 2px solid var(--ap-texto-principal); }
+
+/* Sección de "Acción inmediata" */
+.ap-accion-inmediata { text-align: center; color: var(--ap-texto-secundario); font-size: 0.9em; margin-top: 25px; margin-bottom: 15px; }
+
+/* Sección Enlace para Compartir */
+.ap-share-link-container { margin-top: 30px; }
+.ap-share-link-container h4 { text-align: center; font-size: 1em; color: var(--ap-texto-secundario); margin-bottom: 10px; }
+#ap-share-link-input { width: 100%; padding: 10px; text-align: center; background-color: var(--ap-fondo-claro); border: 1px dashed var(--ap-borde-suave); border-radius: 6px; color: var(--ap-color-secundario); font-family: monospace; }

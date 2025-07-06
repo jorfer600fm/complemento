@@ -1,177 +1,161 @@
 <?php
 /**
  * Plantilla para mostrar un único "Aviso".
- *
- * Esta plantilla estructura la página de detalle de un aviso, mostrando la galería,
- * descripción, video, mapa y una barra lateral con información de contacto y detalles.
+ * v3.0 - Versión final con galería JS y diseño profesional.
  *
  * @package Astra Child Theme
  */
 
-get_header(); 
+get_header();
 
-// Obtener el ID del post actual.
+// --- 1. RECOPILAR TODOS LOS DATOS ---
 $post_id = get_the_ID();
-
-// Recopilar todos los datos del aviso en un array para un acceso más limpio.
 $datos_aviso = [
-    'titulo'         => get_the_title( $post_id ),
-    'contenido'      => wpautop( get_the_content( null, false, $post_id ) ),
-    'codigo'         => get_post_meta( $post_id, '_ap_aviso_codigo', true ),
-    'precio'         => get_post_meta( $post_id, 'ap_price', true ),
-    'unidad'         => get_post_meta( $post_id, 'ap_unit', true ),
-    'distintivos'    => array_filter( [ // array_filter para eliminar valores vacíos
-        get_post_meta( $post_id, 'ap_distintivo_1', true ),
-        get_post_meta( $post_id, 'ap_distintivo_2', true ),
-        get_post_meta( $post_id, 'ap_distintivo_3', true ),
-    ] ),
-    'nombre_contacto'=> get_post_meta( $post_id, 'ap_name', true ),
-    'email'          => get_post_meta( $post_id, 'ap_email', true ),
-    'telefono'       => get_post_meta( $post_id, 'ap_phone', true ),
-    'whatsapp'       => get_post_meta( $post_id, 'ap_whatsapp', true ),
-    'website'        => get_post_meta( $post_id, 'ap_website', true ),
-    'direccion'      => get_post_meta( $post_id, 'ap_address', true ),
-    'departamento'   => strip_tags( get_the_term_list( $post_id, 'departamento', '', ', ', '' ) ),
-    'mapa'           => [
-        'lat' => get_post_meta( $post_id, 'ap_map_lat', true ),
-        'lng' => get_post_meta( $post_id, 'ap_map_lng', true ),
+    'titulo'       => get_the_title(),
+    'autor'        => get_the_author(),
+    'descripcion'  => get_the_content(),
+    'precio'       => get_post_meta($post_id, 'ap_price', true),
+    'unidad'       => get_post_meta($post_id, 'ap_unit', true),
+    'telefono'     => get_post_meta($post_id, 'ap_phone', true),
+    'whatsapp'     => get_post_meta($post_id, 'ap_whatsapp', true),
+    'website'      => get_post_meta($post_id, 'ap_website', true),
+    'pdf_url'      => wp_get_attachment_url(get_post_meta($post_id, 'ap_pdf', true)),
+    'video_url'    => wp_get_attachment_url(get_post_meta($post_id, 'ap_video', true)),
+    'departamento' => strip_tags(get_the_term_list($post_id, 'departamento', '', ', ', '')),
+    'direccion'    => get_post_meta($post_id, 'ap_address', true),
+    'mapa'         => [
+        'lat' => get_post_meta($post_id, 'ap_map_lat', true),
+        'lng' => get_post_meta($post_id, 'ap_map_lng', true),
     ],
-    'galeria_ids'    => [],
-    'video_url'      => wp_get_attachment_url( get_post_meta( $post_id, 'ap_video', true ) ),
-    'pdf_url'        => wp_get_attachment_url( get_post_meta( $post_id, 'ap_pdf', true ) ),
+    'distintivo_1' => get_post_meta($post_id, 'ap_distintivo_1', true),
+    'distintivo_2' => get_post_meta($post_id, 'ap_distintivo_2', true),
+    'galeria'      => [],
 ];
 
-// Construir la galería de imágenes, empezando por la imagen destacada.
-if ( has_post_thumbnail( $post_id ) ) {
-    $datos_aviso['galeria_ids'][] = get_post_thumbnail_id( $post_id );
+// Construir la galería de imágenes
+if (has_post_thumbnail()) { $datos_aviso['galeria'][] = get_post_thumbnail_id(); }
+foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
+    if ($img_id = get_post_meta($post_id, $key, true)) { $datos_aviso['galeria'][] = $img_id; }
 }
-$galeria_extra_ids = [
-    get_post_meta( $post_id, 'ap_photo_2', true ),
-    get_post_meta( $post_id, 'ap_photo_3', true ),
-];
-foreach ( $galeria_extra_ids as $id ) {
-    if ( ! empty( $id ) ) {
-        $datos_aviso['galeria_ids'][] = $id;
-    }
-}
+
+// --- 2. RENDERIZAR LA PÁGINA ---
 ?>
-
 <div id="primary" class="content-area primary">
     <main id="main" class="site-main">
         <div class="ast-container">
-            <div class="ast-row">
-                
-                <div class="ast-col-lg-8 ast-col-md-12">
-                    <article class="ap-aviso-container">
-                        
-                        <?php if ( ! empty( $datos_aviso['galeria_ids'] ) ) : ?>
-                            <div class="ap-section ap-gallery">
-                                <?php echo do_shortcode( '[gallery ids="' . implode( ',', $datos_aviso['galeria_ids'] ) . '" columns="3" link="file"]' ); ?>
-                            </div>
-                        <?php endif; ?>
+            <div class="ap-detalle-layout">
 
-                        <h1 class="ap-aviso-titulo"><?php echo esc_html( $datos_aviso['titulo'] ); ?></h1>
+                <div class="ap-columna-principal">
+                    <section class="ap-section ap-media-gallery">
+                        <div id="ap-main-media-viewer">
+                            <?php if ($datos_aviso['video_url']) : ?>
+                                <?php echo wp_video_shortcode(['src' => esc_url($datos_aviso['video_url'])]); ?>
+                            <?php elseif (!empty($datos_aviso['galeria'])) : ?>
+                                <img src="<?php echo esc_url(wp_get_attachment_image_url($datos_aviso['galeria'][0], 'full')); ?>" alt="Vista principal">
+                            <?php endif; ?>
+                        </div>
 
-                        <?php if ( ! empty( $datos_aviso['distintivos'] ) ) : ?>
-                            <div class="ap-distintivos-wrapper">
-                                <?php foreach ( $datos_aviso['distintivos'] as $distintivo ) : ?>
-                                    <span class="ap-distintivo"><?php echo esc_html( $distintivo ); ?></span>
+                        <?php if (!empty($datos_aviso['galeria']) && count($datos_aviso['galeria']) > 0) : ?>
+                            <div class="ap-media-thumbnails">
+                                <?php foreach ($datos_aviso['galeria'] as $img_id) : ?>
+                                    <a href="#" class="ap-media-thumbnail" data-full-url="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'full')); ?>">
+                                        <img src="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'thumbnail')); ?>" alt="Thumbnail">
+                                    </a>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
+                    </section>
 
-                        <div class="ap-section ap-contenido">
-                            <h3>Descripción</h3>
-                            <?php echo $datos_aviso['contenido']; // Contenido ya procesado con wpautop ?>
+                    <?php if (!empty($datos_aviso['descripcion'])) : ?>
+                    <section class="ap-section ap-descripcion">
+                        <h3 class="ap-section-title">Descripción</h3>
+                        <?php echo wpautop($datos_aviso['descripcion']); ?>
+                    </section>
+                    <?php endif; ?>
+
+                    <section class="ap-section ap-detalles-lista">
+                        <h3 class="ap-section-title">Detalles del Aviso</h3>
+                        <ul>
+                            <?php if ($datos_aviso['departamento']) : ?>
+                                <li><strong>Departamento:</strong> <span><?php echo esc_html($datos_aviso['departamento']); ?></span></li>
+                            <?php endif; ?>
+                             <?php if ($datos_aviso['direccion']) : ?>
+                                <li><strong>Dirección:</strong> <span><?php echo esc_html($datos_aviso['direccion']); ?></span></li>
+                            <?php endif; ?>
+                        </ul>
+                    </section>
+
+                    <?php if ($datos_aviso['mapa']['lat'] && $datos_aviso['mapa']['lng']) : ?>
+                    <section class="ap-section ap-mapa">
+                        <h3 class="ap-section-title">Ubicación</h3>
+                        <div id="ap-map-display" style="height: 400px; width: 100%; border-radius: 8px;"></div>
+                        <div class="ap-share-link-container">
+                             <h4>Enlace para compartir en: Facebook, WhatsApp, y otras redes sociales</h4>
+                             <input type="text" readonly value="<?php echo esc_url(get_permalink()); ?>" id="ap-share-link-input">
                         </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const lat = <?php echo esc_js($datos_aviso['mapa']['lat']); ?>;
+                                const lng = <?php echo esc_js($datos_aviso['mapa']['lng']); ?>;
+                                const map = L.map('ap-map-display').setView([lat, lng], 15);
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                                L.marker([lat, lng]).addTo(map);
+                            });
+                        </script>
+                    </section>
+                    <?php endif; ?>
+
+                </div>
+
+                <div class="ap-columna-lateral">
+                    <div class="ap-info-box">
+                        <h1 class="ap-titulo-principal"><?php echo esc_html($datos_aviso['titulo']); ?></h1>
                         
-                        <?php if ( $datos_aviso['video_url'] ) : ?>
-                             <div class="ap-section ap-video">
-                                 <h3>Video</h3>
-                                 <?php echo do_shortcode( '[video src="' . esc_url( $datos_aviso['video_url'] ) . '"]' ); ?>
-                             </div>
+                        <?php if ($datos_aviso['distintivo_1'] || $datos_aviso['distintivo_2']) : ?>
+                            <div class="ap-badges-container">
+                                <?php if ($datos_aviso['distintivo_1']) : ?>
+                                    <span class="ap-badge-detalle ap-badge-destacado">⭐ <?php echo esc_html($datos_aviso['distintivo_1']); ?></span>
+                                <?php endif; ?>
+                                <?php if ($datos_aviso['distintivo_2']) : ?>
+                                    <span class="ap-badge-detalle ap-badge-verificado">✅ <?php echo esc_html($datos_aviso['distintivo_2']); ?></span>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
                         
-                        <?php if ( ! empty( $datos_aviso['mapa']['lat'] ) && ! empty( $datos_aviso['mapa']['lng'] ) ) : ?>
-                            <div class="ap-section ap-mapa">
-                                <h3>Ubicación</h3>
-                                <div id="ap-map-display" style="height: 400px; width: 100%;"></div>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        const lat = <?php echo esc_js( $datos_aviso['mapa']['lat'] ); ?>;
-                                        const lng = <?php echo esc_js( $datos_aviso['mapa']['lng'] ); ?>;
-                                        const map = L.map('ap-map-display').setView([lat, lng], 15);
-                                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                                        L.marker([lat, lng]).addTo(map);
-                                    });
-                                </script>
+                        <?php if ($datos_aviso['precio']) : ?>
+                            <div class="ap-precio">
+                                S/ <?php echo number_format(floatval($datos_aviso['precio']), 2, '.', ','); ?>
+                                <?php if ($datos_aviso['unidad']) : ?>
+                                    <span class="ap-unidad">(<?php echo esc_html($datos_aviso['unidad']); ?>)</span>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
 
-                    </article>
-                </div>
+                        <p class="ap-autor">Publicado por: <strong><?php echo esc_html($datos_aviso['autor']); ?></strong></p>
 
-                <div class="ast-col-lg-4 ast-col-md-12">
-                    <aside class="ap-sidebar">
+                        <p class="ap-accion-inmediata">Para acción inmediata haz clic en los contactos</p>
 
-                        <?php if ( ! empty( $datos_aviso['precio'] ) ) : ?>
-                            <div class="ap-precio-box">
-                                <span class="ap-precio-valor">
-                                    S/ <?php echo number_format( floatval( $datos_aviso['precio'] ), 0, '.', ',' ); ?>
-                                </span>
-                                <?php if ( ! empty( $datos_aviso['unidad'] ) ) : ?>
-                                    <span class="ap-precio-unidad"><?php echo esc_html( $datos_aviso['unidad'] ); ?></span>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="ap-contact-box">
-                            <h4>Información de Contacto</h4>
-                            <p><strong>Publicado por:</strong> <?php echo esc_html( $datos_aviso['nombre_contacto'] ); ?></p>
-                            
-                            <?php if ( ! empty( $datos_aviso['telefono'] ) ) : ?>
-                                <a href="tel:<?php echo esc_attr( $datos_aviso['telefono'] ); ?>" class="ap-contact-button ap-button-phone">
-                                    Llamar: <?php echo esc_html( $datos_aviso['telefono'] ); ?>
-                                </a>
+                        <div class="ap-botones-contacto">
+                            <?php if ($datos_aviso['whatsapp']) : ?>
+                                <a href="https://wa.me/51<?php echo esc_attr($datos_aviso['whatsapp']); ?>?text=<?php echo urlencode('Hola, estoy interesado/a en el aviso "' . $datos_aviso['titulo'] . '" que vi en - chambaynegocios.com'); ?>" target="_blank" class="ap-btn-whatsapp">Contactar por WhatsApp (<?php echo esc_html($datos_aviso['whatsapp']); ?>)</a>
                             <?php endif; ?>
 
-                            <?php if ( ! empty( $datos_aviso['whatsapp'] ) ) : ?>
-                                <a href="https://wa.me/51<?php echo esc_attr( $datos_aviso['whatsapp'] ); ?>" target="_blank" rel="noopener noreferrer" class="ap-contact-button ap-button-whatsapp">
-                                    Contactar por WhatsApp
-                                </a>
+                            <?php if ($datos_aviso['telefono']) : ?>
+                                <a href="tel:<?php echo esc_attr($datos_aviso['telefono']); ?>" class="ap-btn-llamar">Llamar (<?php echo esc_html($datos_aviso['telefono']); ?>)</a>
                             <?php endif; ?>
 
-                             <?php if ( $datos_aviso['pdf_url'] ) : ?>
-                                <a href="<?php echo esc_url( $datos_aviso['pdf_url'] ); ?>" target="_blank" rel="noopener noreferrer" class="ap-contact-button ap-button-pdf">
-                                    Ver/Descargar PDF
-                                </a>
+                             <?php if ($datos_aviso['pdf_url']) : ?>
+                                <a href="<?php echo esc_url($datos_aviso['pdf_url']); ?>" target="_blank" rel="noopener noreferrer" class="ap-btn-pdf">Más detalles, ver / descargar PDF</a>
                             <?php endif; ?>
 
-                            <?php if ( ! empty( $datos_aviso['website'] ) ) : ?>
-                                <a href="<?php echo esc_url( $datos_aviso['website'] ); ?>" target="_blank" rel="noopener noreferrer" class="ap-contact-button ap-button-website">
-                                    Visitar Sitio Web
-                                </a>
+                            <?php if ($datos_aviso['website']) : ?>
+                                <a href="<?php echo esc_url($datos_aviso['website']); ?>" target="_blank" rel="noopener noreferrer" class="ap-btn-website">Visitar Sitio Web</a>
                             <?php endif; ?>
                         </div>
-
-                        <div class="ap-details-box">
-                            <h4>Detalles del Aviso</h4>
-                            <ul>
-                                <?php if ( ! empty( $datos_aviso['codigo'] ) ) : ?>
-                                    <li><strong>Código:</strong> <?php echo esc_html( $datos_aviso['codigo'] ); ?></li>
-                                <?php endif; ?>
-                                <?php if ( ! empty( $datos_aviso['departamento'] ) ) : ?>
-                                    <li><strong>Departamento:</strong> <?php echo esc_html( $datos_aviso['departamento'] ); ?></li>
-                                <?php endif; ?>
-                                <?php if ( ! empty( $datos_aviso['direccion'] ) ) : ?>
-                                    <li><strong>Dirección:</strong> <?php echo esc_html( $datos_aviso['direccion'] ); ?></li>
-                                <?php endif; ?>
-                            </ul>
-                        </div>
-                    </aside>
+                    </div>
                 </div>
 
-            </div> 
+            </div>
         </div>
     </main>
 </div>

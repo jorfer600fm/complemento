@@ -1,15 +1,23 @@
 /**
  * ===================================================================
- * MÓDULO: COMPONENTE DE BÚSQUEDA
+ * MÓDULO: COMPONENTE DE BÚSQUEDA (v3 - Ajuste final de espacio)
  * ===================================================================
  */
 
-.ap-search-form-container {
-    padding: 2em;
-    background-color: var(--ap-fondo-suave);
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    margin: 2em auto;
+/* Estilo para el contenedor del buscador en la página de resultados */
+.ap-fullwidth-search-container {
+    background-color: var(--ap-fondo-suave, #f9fafb);
+    padding: 2em 0;
+    margin-bottom: 0; /* Espacio entre buscador y lista eliminado */
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ap-fullwidth-search-container .ap-search-form-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+    border: none;
+    background-color: transparent;
 }
 
 .ap-search-form {
@@ -62,21 +70,21 @@
     width: 100%;
 }
 
-/* --- NUEVO: Grupo que une la barra de texto y el botón --- */
+/* --- Grupo que une la barra de texto y el botón --- */
 .ap-search-input-group {
     display: flex;
     width: 100%;
+    position: relative;
 }
 
 .ap-search-field {
-    flex-grow: 1; /* El campo de texto ocupa todo el espacio posible */
-    padding: 14px 20px;
+    flex-grow: 1;
+    padding: 14px 50px 14px 20px;
     font-size: 16px;
     border: 1px solid var(--ap-borde-suave);
-    border-right: none; /* Quitamos el borde derecho para unirlo al botón */
-    /* Bordes redondeados solo a la izquierda */
+    border-right: none;
     border-radius: 50px 0 0 50px;
-    min-width: 0; /* Necesario para que flexbox no lo desborde */
+    min-width: 0;
 }
 .ap-search-field:focus {
     outline: none;
@@ -85,16 +93,33 @@
 }
 
 .ap-search-submit {
-    flex-shrink: 0; /* El botón no se encoge */
+    flex-shrink: 0;
     padding: 0 25px;
     border: 1px solid var(--ap-marca-secundario);
-    /* Bordes redondeados solo a la derecha */
     border-radius: 0 50px 50px 0;
     cursor: pointer;
     font-weight: bold;
     font-size: 16px;
     background-color: var(--ap-marca-secundario);
     color: white;
+}
+
+/* Estilo para la 'X' de limpiar */
+.ap-search-clear {
+    position: absolute;
+    right: 125px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0 10px;
+    line-height: 1;
+}
+.ap-search-clear:hover {
+    color: #333;
 }
 
 /* Dropdown de Departamentos */

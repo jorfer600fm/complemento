@@ -136,28 +136,29 @@ class AP_Form {
         }
     }
 
-    private function generate_and_save_ai_tags($post_id, $title) {
-        $options = get_option('ap_options');
-        $api_key = isset($options['api_key']) ? trim($options['api_key']) : '';
-        if (empty($api_key) || empty($title)) return;
+private function generate_and_save_ai_tags($post_id, $title) {
+    $options = get_option('ap_options');
+    $api_key = isset($options['api_key']) ? trim($options['api_key']) : '';
+    if (empty($api_key) || empty($title)) return;
 
-        $prompt = "Eres un experto en SEO y categorización para un portal de anuncios clasificados de Perú. Basado en el título del anuncio: '{$title}', genera una lista de 5 a 10 etiquetas de búsqueda clave. Incluye plurales, singulares, variaciones de género (masculino/femenino), sinónimos relevantes en el contexto peruano y conceptos relacionados. Devuelve únicamente la lista de términos separados por comas, sin numeración ni texto introductorio.";
+    // --- PROMPT ACTUALIZADO ---
+    $prompt = "Eres un experto académico de la lengua española especializado en el español del Perú. A partir de las palabras del título del anuncio: '{$title}', genera una lista de 5 a 10 palabras clave nuevas, incluyendo plurales, variaciones de género (masculino/femenino), diminutivos y sinónimos relevantes. Devuelve únicamente la lista de palabras separadas por comas, sin numeración ni texto adicional.";
 
-        $response = $this->call_gemini_api($prompt, $api_key);
-        
-        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) return;
+    $response = $this->call_gemini_api($prompt, $api_key);
+    
+    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) return;
 
-        $body = json_decode(wp_remote_retrieve_body($response), true);
-        if (isset($body['candidates'][0]['content']['parts'][0]['text'])) {
-            $tags_string = trim($body['candidates'][0]['content']['parts'][0]['text']);
-            $tags_array = array_map('trim', explode(',', $tags_string));
-            $tags_array = array_filter($tags_array); 
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (isset($body['candidates'][0]['content']['parts'][0]['text'])) {
+        $tags_string = trim($body['candidates'][0]['content']['parts'][0]['text']);
+        $tags_array = array_map('trim', explode(',', $tags_string));
+        $tags_array = array_filter($tags_array); 
 
-            if (!empty($tags_array)) {
-                wp_set_object_terms($post_id, $tags_array, 'ap_ai_tags');
-            }
+        if (!empty($tags_array)) {
+            wp_set_object_terms($post_id, $tags_array, 'ap_ai_tags');
         }
     }
+}
 
     /**
      * ¡NUEVO! Revisa el contenido con IA para moderación.
