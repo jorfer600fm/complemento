@@ -1,8 +1,6 @@
 /**
  * ===================================================================
- * MÓDULO: PÁGINA DE DETALLE DE AVISO (v3.3 - Pulido Final)
- * - Galería de medios 100% visible en escritorio y móvil.
- * - Lógica de filtros robusta.
+ * MÓDULO: PÁGINA DE DETALLE DE AVISO (v5.0 - Estrategia de Contenedor Predecible)
  * ===================================================================
  */
 
@@ -56,29 +54,27 @@
 /* --- GALERÍA DE MEDIOS --- */
 .ap-media-gallery { display: flex; flex-direction: column; gap: 15px; }
 
+/* SOLUCIÓN: Se asigna una altura fija y predecible al contenedor. */
 #ap-main-media-viewer { 
+    position: relative;
     border: 1px solid var(--ap-borde-suave); 
     border-radius: 8px; 
     overflow: hidden; 
     background-color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 250px; /* Altura mínima para evitar que colapse */
+    width: 100%;
+    height: 60vh; /* Altura fija: 60% de la altura de la ventana. */
 }
 
-/* --- ¡CORRECCIÓN CLAVE! --- */
-/* Esta regla asegura que el contenido se ajuste perfectamente dentro del visor sin recortar */
 #ap-main-media-viewer iframe,
 #ap-main-media-viewer video,
 #ap-main-media-viewer img {
-    max-width: 100%;
-    max-height: 80vh; /* Altura máxima del 80% de la ventana del navegador */
-    width: auto;
-    height: auto;
-    object-fit: contain;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* El contenido se adapta al contenedor. */
 }
-
 
 .ap-media-thumbnails { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
 .ap-media-thumbnail {
@@ -94,7 +90,12 @@
     background-color: #000;
 }
 .ap-media-thumbnail:hover { border-color: var(--ap-color-primario); }
-.ap-media-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+
+.ap-media-thumbnail img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+}
 
 .ap-video-play-icon {
     position: absolute; top: 50%; left: 50%;
@@ -106,7 +107,7 @@
     pointer-events: none; line-height: 40px; padding-left: 4px;
 }
 
-/* --- OTRAS SECCIONES (SIN CAMBIOS) --- */
+/* --- OTRAS SECCIONES --- */
 .ap-columna-principal .ap-section { margin-bottom: 2.5em; }
 .ap-section h3.ap-section-title { font-size: 1.8em; color: var(--ap-texto-principal); margin-top: 0; margin-bottom: 0.8em; padding-bottom: 0.5em; border-bottom: 2px solid var(--ap-color-secundario); }
 .ap-detalles-lista ul { list-style: none; padding: 0; margin: 0; }

@@ -2,7 +2,7 @@
  * Mejoras Globales para el Tema Hijo de Avisos Perú
  * v1.1.0
  * - Previene búsquedas vacías en todos los formularios.
- * - Corrige el renderizado de videos verticales al cargar y al redimensionar/hacer zoom.
+ * - Corrección de video eliminada, ahora se gestiona por CSS.
  */
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -30,28 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     /**
-     * TAREA 2: Corregir renderizado del video en la página de detalle.
+     * TAREA 2: Corrección de video eliminada.
+     * La lógica para el renderizado del video ha sido movida a una solución
+     * más robusta y eficiente en single-aviso.css
      */
-    const mediaViewer = document.getElementById('ap-main-media-viewer');
-    if (mediaViewer) {
-        const videoElement = mediaViewer.querySelector('video');
-        if (videoElement) {
-            
-            // Función para forzar el ajuste del video
-            const fixVideoRender = () => {
-                // Truco para forzar al navegador a re-calcular las dimensiones
-                videoElement.style.height = 'auto'; // Resetea la altura
-                setTimeout(() => {
-                    // Y la vuelve a aplicar para que se ajuste al contenedor
-                    videoElement.style.height = '100%'; 
-                }, 10);
-            };
-
-            // Ejecuta la corrección al cargar la página
-            fixVideoRender();
-            
-            // Y vuelve a ejecutarla cada vez que la ventana cambia de tamaño (o se hace zoom)
-            window.addEventListener('resize', fixVideoRender);
-        }
-    }
 });

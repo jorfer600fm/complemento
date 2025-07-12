@@ -280,6 +280,7 @@ public function render_details_meta_box( $post ) {
         if ( ! current_user_can( 'edit_post', $post_id ) ) return;
         if ( $post->post_type != 'aviso' ) return;
         
+        // Guardar tipo de anuncio (checkbox)
         if (isset($_POST['ap_ad_type']) && is_array($_POST['ap_ad_type'])) {
             $sanitized_ad_types = array_map('sanitize_text_field', $_POST['ap_ad_type']);
             update_post_meta($post_id, 'ap_ad_type', $sanitized_ad_types);
@@ -287,26 +288,33 @@ public function render_details_meta_box( $post ) {
             delete_post_meta($post_id, 'ap_ad_type');
         }
 
-        $meta_fields = [
-            '_ap_notas_internas', 'ap_distintivo_1', 'ap_distintivo_2', 'ap_distintivo_3',
-            'ap_price', 'ap_unit', 'ap_name', 'ap_email', 'ap_phone',
-            'ap_whatsapp', 'ap_website', 'ap_address', 'ap_map_lat', 'ap_map_lng', 'ap_expiry_date'
+        // MEJORA: Sanitización más estricta por tipo de campo
+        $meta_to_save = [
+            'ap_distintivo_1' => 'sanitize_text_field',
+            'ap_distintivo_2' => 'sanitize_text_field',
+            'ap_distintivo_3' => 'sanitize_text_field',
+            'ap_price'        => 'floatval',
+            'ap_unit'         => 'sanitize_text_field',
+            'ap_name'         => 'sanitize_text_field',
+            'ap_email'        => 'sanitize_email',
+            'ap_phone'        => 'sanitize_text_field',
+            'ap_whatsapp'     => 'sanitize_text_field',
+            'ap_website'      => 'esc_url_raw',
+            'ap_address'      => 'sanitize_text_field',
+            'ap_map_lat'      => 'sanitize_text_field',
+            'ap_map_lng'      => 'sanitize_text_field',
+            'ap_expiry_date'  => 'sanitize_text_field',
+            '_ap_notas_internas' => 'sanitize_textarea_field',
         ];
         
-        foreach ( $meta_fields as $field ) {
-            if ( isset( $_POST[$field] ) ) {
-                $value = $_POST[$field];
-                if ( $field === 'ap_email' ) {
-                    $sanitized_value = sanitize_email( $value );
-                } elseif ( $field === '_ap_notas_internas' ) {
-                    $sanitized_value = sanitize_textarea_field( $value );
-                } else {
-                    $sanitized_value = sanitize_text_field( $value );
-                }
-                update_post_meta( $post_id, $field, $sanitized_value );
+        foreach ( $meta_to_save as $key => $sanitizer ) {
+            if ( isset( $_POST[$key] ) ) {
+                $value = call_user_func( $sanitizer, $_POST[$key] );
+                update_post_meta( $post_id, $key, $value );
             }
         }
         
+        // Guardar archivos (IDs de adjuntos)
         $file_fields = ['ap_photo_2', 'ap_photo_3', 'ap_pdf', 'ap_video'];
         foreach ( $file_fields as $field ) {
             if ( isset( $_POST[$field] ) ) {

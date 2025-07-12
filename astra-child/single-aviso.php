@@ -1,7 +1,7 @@
 <?php
 /**
  * Plantilla para mostrar un único "Aviso".
- * v3.2 - Reestructuración de layout y textos mejorados.
+ * v4.0 - Lógica de carga inicial: Mostrar siempre la imagen por defecto.
  *
  * @package Astra Child Theme
  */
@@ -32,11 +32,13 @@ $datos_aviso = [
     'galeria'      => [],
 ];
 
+// Preparar el HTML del video para usarlo con JavaScript
 $video_player_html = '';
 if ($datos_aviso['video_url']) {
     $video_player_html = wp_video_shortcode(['src' => esc_url($datos_aviso['video_url'])]);
 }
 
+// Llenar la galería, poniendo la imagen destacada siempre primero.
 if (has_post_thumbnail()) { $datos_aviso['galeria'][] = get_post_thumbnail_id(); }
 foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
     if ($img_id = get_post_meta($post_id, $key, true)) { $datos_aviso['galeria'][] = $img_id; }
@@ -52,22 +54,27 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                 <div class="ap-columna-principal">
                     <section class="ap-section ap-media-gallery">
                         <div id="ap-main-media-viewer">
-                            <?php if ($video_player_html) : ?>
-                                <?php echo $video_player_html; ?>
-                            <?php elseif (!empty($datos_aviso['galeria'])) : ?>
-                                <img src="<?php echo esc_url(wp_get_attachment_image_url($datos_aviso['galeria'][0], 'large')); ?>" alt="Vista principal">
-                            <?php endif; ?>
+                            <?php
+                            // LÓGICA MODIFICADA: Mostrar siempre la primera imagen de la galería al cargar.
+                            if (!empty($datos_aviso['galeria'])) {
+                                $initial_image_id = $datos_aviso['galeria'][0];
+                                echo '<img src="' . esc_url(wp_get_attachment_image_url($initial_image_id, 'large')) . '" alt="Vista principal">';
+                            }
+                            ?>
                         </div>
 
                         <?php if ($video_player_html || count($datos_aviso['galeria']) > 1) : ?>
                             <div class="ap-media-thumbnails">
-                                <?php if ($video_player_html) : ?>
+                                <?php // La miniatura del video se muestra si existe un video.
+                                if ($video_player_html) : ?>
                                     <a href="#" class="ap-media-thumbnail" data-media-type="video">
                                         <img src="<?php echo esc_url(get_the_post_thumbnail_url($post_id, 'thumbnail')); ?>" alt="Video Thumbnail">
                                         <span class="ap-video-play-icon">&#9658;</span>
                                     </a>
                                 <?php endif; ?>
-                                <?php foreach ($datos_aviso['galeria'] as $img_id) : ?>
+
+                                <?php // Las miniaturas de las imágenes se muestran si hay imágenes.
+                                foreach ($datos_aviso['galeria'] as $img_id) : ?>
                                     <a href="#" class="ap-media-thumbnail" data-media-type="image" data-full-url="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'large')); ?>">
                                         <img src="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'thumbnail')); ?>" alt="Thumbnail">
                                     </a>
@@ -109,7 +116,6 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                             });
                         </script>
                         
-                        <?php // CAMBIO: Anotación movida aquí ?>
                         <div class="ap-share-link-container">
                              <h4>Enlace para compartir en: Facebook, WhatsApp, y otras redes sociales</h4>
                              <input type="text" readonly value="<?php echo esc_url(get_permalink()); ?>" id="ap-share-link-input">
@@ -161,7 +167,6 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                             <?php endif; ?>
 
                             <?php if ($datos_aviso['website']) : ?>
-                                <?php // CAMBIO: Texto del botón actualizado ?>
                                 <a href="<?php echo esc_url($datos_aviso['website']); ?>" target="_blank" rel="noopener noreferrer" class="ap-btn-website">Visitar el sitio Web, YouTube o Facebook del anunciante</a>
                             <?php endif; ?>
                         </div>
@@ -173,6 +178,7 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
     </main>
 </div>
 <?php 
+// Pasamos el HTML del video a JavaScript para que esté disponible al hacer clic.
 if ($video_player_html) {
     wp_register_script('child-single-aviso-js-vars', '');
     wp_enqueue_script('child-single-aviso-js-vars');

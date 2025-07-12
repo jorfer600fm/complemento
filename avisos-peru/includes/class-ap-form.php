@@ -46,9 +46,14 @@ class AP_Form {
         return ob_get_clean();
     }
     
+    /**
+     * Optimiza las imágenes subidas.
+     * MEJORA: Ahora solo redimensiona la imagen original (JPG/PNG) para que Bunny.net la convierta a WebP.
+     */
     public function optimize_image( $file_info ) {
         $file_path = $file_info['file'];
         
+        // Solo procesar si es una imagen
         $mime_type = mime_content_type($file_path);
         if (strpos($mime_type, 'image') === false) {
             return $file_info;
@@ -59,30 +64,25 @@ class AP_Form {
             return $file_info;
         }
 
-        $max_dimension = 1920;
-        $quality = 75;
+        $max_dimension = 1920; // Dimensión máxima (ancho o alto)
+        $quality = 75; // Calidad de compresión
 
+        // Redimensionar si es necesario
         $size = $image_editor->get_size();
         if ($size['width'] > $max_dimension || $size['height'] > $max_dimension) {
             $image_editor->resize( $max_dimension, $max_dimension, false );
         }
 
+        // Establecer la calidad de compresión
         $image_editor->set_quality( $quality );
 
-        $file_path_info = pathinfo($file_path);
-        $dirname = $file_path_info['dirname'];
-        $filename_no_ext = $file_path_info['filename'];
-        $new_webp_path = $dirname . '/' . $filename_no_ext . '.webp';
+        // Guardar la imagen optimizada, sobrescribiendo el archivo original
+        $saved_image = $image_editor->save($file_path);
 
-        $saved_image = $image_editor->save($new_webp_path, 'image/webp');
-
-        if ( !is_wp_error($saved_image) && file_exists($saved_image['path']) ) {
-            unlink($file_path);
+        // Si el guardado fue exitoso, la información del archivo ya está actualizada
+        if (!is_wp_error($saved_image)) {
             $file_info['file'] = $saved_image['path'];
-            $file_info['url'] = str_replace(basename($file_info['url']), basename($saved_image['path']), $file_info['url']);
-            $file_info['type'] = 'image/webp';
-        } else {
-            $image_editor->save($file_path);
+            $file_info['url'] = str_replace(wp_basename($file_info['url']), wp_basename($saved_image['path']), $file_info['url']);
         }
         
         return $file_info;
@@ -188,6 +188,7 @@ class AP_Form {
         
         if (!empty($_POST['email']) && !is_email($_POST['email'])) { $errors[] = "El formato del correo electrónico no es válido."; }
         if (!empty($_POST['phone']) && !preg_match('/^[0-9]{9}$/', $_POST['phone'])) { $errors[] = "El celular debe contener 9 dígitos."; }
+        if (!empty($_POST['website']) && !filter_var($_POST['website'], FILTER_VALIDATE_URL)) { $errors[] = "La URL del sitio web no es válida."; }
         if (isset($_FILES['pdf']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK && $_FILES['pdf']['size'] > (200 * 1024)) { $errors[] = '¡Atención! El archivo PDF no puede superar los 200 KB.'; }
         if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK && $_FILES['video']['size'] > (3000 * 1024)) { $errors[] = '¡Atención! El archivo de Video no puede superar los 3.0 MB.'; }
         
@@ -213,13 +214,35 @@ class AP_Form {
             $sanitized_ad_types = array_map('sanitize_text_field', $_POST['ad_type']);
             update_post_meta($post_id, 'ap_ad_type', $sanitized_ad_types);
         }
-
-        $meta_fields = ['price', 'unit', 'name', 'email', 'phone', 'whatsapp', 'website', 'address', 'map_lat', 'map_lng', 'expiry_date'];
-        foreach($meta_fields as $field) {
-            if (isset($_POST[$field]) && !empty($_POST[$field])) {
-                $value = ($field === 'price') ? str_replace(',', '', $_POST[$field]) : $_POST[$field];
-                update_post_meta($post_id, 'ap_' . $field, sanitize_text_field($value));
-            }
+        
+        // MEJORA: Validación y sanitización más específica por campo
+        if (isset($_POST['price']) && !empty($_POST['price'])) {
+            $price_clean = preg_replace('/[^0-9.]/', '', $_POST['price']);
+            update_post_meta($post_id, 'ap_price', floatval($price_clean));
+        }
+        if (isset($_POST['unit']) && !empty($_POST['unit'])) {
+            update_post_meta($post_id, 'ap_unit', sanitize_text_field($_POST['unit']));
+        }
+        update_post_meta($post_id, 'ap_name', sanitize_text_field($_POST['name']));
+        update_post_meta($post_id, 'ap_email', sanitize_email($_POST['email']));
+        update_post_meta($post_id, 'ap_phone', sanitize_text_field($_POST['phone']));
+        if (isset($_POST['whatsapp']) && !empty($_POST['whatsapp'])) {
+             update_post_meta($post_id, 'ap_whatsapp', sanitize_text_field($_POST['whatsapp']));
+        }
+        if (isset($_POST['website']) && !empty($_POST['website'])) {
+             update_post_meta($post_id, 'ap_website', esc_url_raw($_POST['website']));
+        }
+        if (isset($_POST['address']) && !empty($_POST['address'])) {
+             update_post_meta($post_id, 'ap_address', sanitize_text_field($_POST['address']));
+        }
+        if (isset($_POST['map_lat']) && !empty($_POST['map_lat'])) {
+             update_post_meta($post_id, 'ap_map_lat', sanitize_text_field($_POST['map_lat']));
+        }
+        if (isset($_POST['map_lng']) && !empty($_POST['map_lng'])) {
+             update_post_meta($post_id, 'ap_map_lng', sanitize_text_field($_POST['map_lng']));
+        }
+        if (isset($_POST['expiry_date']) && !empty($_POST['expiry_date'])) {
+             update_post_meta($post_id, 'ap_expiry_date', sanitize_text_field($_POST['expiry_date']));
         }
         
         if (!empty($_POST['department'])) { wp_set_object_terms($post_id, sanitize_text_field($_POST['department']), 'departamento'); }

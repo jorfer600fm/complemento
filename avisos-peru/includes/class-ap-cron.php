@@ -73,51 +73,63 @@ class AP_Cron {
 
     /**
      * Mueve a la papelera los avisos que han superado su fecha de vencimiento.
+     * MEJORA: Procesa en lotes para no sobrecargar el servidor.
      */
     private function handle_expired_ads() {
         $today = date( 'Y-m-d' );
-        $args = [
-            'post_type'      => 'aviso',
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'meta_query'     => [
-                [
-                    'key'     => 'ap_expiry_date',
-                    'value'   => $today,
-                    'compare' => '<',
-                    'type'    => 'DATE',
+        $batch_size = 100; // Procesar 100 avisos a la vez
+        
+        do {
+            $args = [
+                'post_type'      => 'aviso',
+                'post_status'    => 'publish',
+                'posts_per_page' => $batch_size, // Usar el tamaño del lote
+                'meta_query'     => [
+                    [
+                        'key'     => 'ap_expiry_date',
+                        'value'   => $today,
+                        'compare' => '<',
+                        'type'    => 'DATE',
+                    ],
                 ],
-            ],
-        ];
-
-        $expired_ads = get_posts( $args );
-
-        foreach ( $expired_ads as $ad ) {
-            wp_trash_post( $ad->ID );
-        }
+                'fields' => 'ids', // Obtener solo los IDs es más rápido
+            ];
+    
+            $expired_ad_ids = get_posts( $args );
+    
+            foreach ( $expired_ad_ids as $ad_id ) {
+                wp_trash_post( $ad_id );
+            }
+        } while ( ! empty( $expired_ad_ids ) ); // Continuar mientras se encuentren avisos
     }
 
     /**
      * Elimina permanentemente los avisos que llevan más de 5 días en la papelera.
+     * MEJORA: Procesa en lotes para no sobrecargar el servidor.
      */
     private function handle_old_trashed_ads() {
         $five_days_ago = date( 'Y-m-d H:i:s', time() - ( 5 * DAY_IN_SECONDS ) );
-        $args = [
-            'post_type'      => 'aviso',
-            'post_status'    => 'trash',
-            'posts_per_page' => -1,
-            'date_query' => [
-                [
-                    'column' => 'post_modified_gmt',
-                    'before' => $five_days_ago,
+        $batch_size = 100; // Procesar 100 avisos a la vez
+
+        do {
+            $args = [
+                'post_type'      => 'aviso',
+                'post_status'    => 'trash',
+                'posts_per_page' => $batch_size, // Usar el tamaño del lote
+                'date_query' => [
+                    [
+                        'column' => 'post_modified_gmt',
+                        'before' => $five_days_ago,
+                    ],
                 ],
-            ],
-        ];
-
-        $old_trashed_ads = get_posts( $args );
-
-        foreach ( $old_trashed_ads as $ad ) {
-            wp_delete_post( $ad->ID, true );
-        }
+                'fields' => 'ids', // Obtener solo los IDs es más rápido
+            ];
+    
+            $old_trashed_ad_ids = get_posts( $args );
+    
+            foreach ( $old_trashed_ad_ids as $ad_id ) {
+                wp_delete_post( $ad_id, true );
+            }
+        } while ( ! empty( $old_trashed_ad_ids ) ); // Continuar mientras se encuentren avisos
     }
 }
