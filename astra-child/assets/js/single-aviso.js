@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * Lógica para la galería de medios interactiva.
+     * v2.0 - Añadido soporte para alternar entre video y fotos.
      */
     const mainMediaContainer = document.getElementById('ap-main-media-viewer');
     const thumbnails = document.querySelectorAll('.ap-media-thumbnail');
@@ -9,19 +10,27 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mainMediaContainer && thumbnails.length > 0) {
         thumbnails.forEach(thumb => {
             thumb.addEventListener('click', function(e) {
-                e.preventDefault(); // Evita que la página salte
+                e.preventDefault();
                 
-                // Obtiene la URL de la imagen en alta resolución del atributo 'data-full-url'
-                const fullImageUrl = this.getAttribute('data-full-url');
-                
-                // Crea un nuevo elemento de imagen
-                const newImage = document.createElement('img');
-                newImage.src = fullImageUrl;
-                newImage.alt = "Vista principal";
+                const mediaType = this.getAttribute('data-media-type');
 
-                // Vacía el contenedor principal y añade la nueva imagen
-                mainMediaContainer.innerHTML = '';
-                mainMediaContainer.appendChild(newImage);
+                if (mediaType === 'image') {
+                    // Si es una imagen, crea un elemento <img>
+                    const fullImageUrl = this.getAttribute('data-full-url');
+                    const newImage = document.createElement('img');
+                    newImage.src = fullImageUrl;
+                    newImage.alt = "Vista principal";
+                    
+                    mainMediaContainer.innerHTML = ''; // Limpia el contenedor
+                    mainMediaContainer.appendChild(newImage);
+
+                } else if (mediaType === 'video') {
+                    // Si es el video, usa el HTML que pasamos desde PHP
+                    // La variable `ap_video_player_html` es creada en single-aviso.php
+                    if (typeof ap_video_player_html !== 'undefined') {
+                        mainMediaContainer.innerHTML = ap_video_player_html;
+                    }
+                }
             });
         });
     }

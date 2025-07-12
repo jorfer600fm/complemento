@@ -1,8 +1,7 @@
 <?php
 /**
  * Gestiona el formulario público de envío de avisos.
- * v6.4.0
- * - AÑADIDO: Moderación automática con IA (Gemini 1.5 Flash) para detectar contenido inapropiado.
+ * v6.4.2 - Aumentado el timeout de la API de IA.
  *
  * @package Avisos_Peru
  */
@@ -47,11 +46,6 @@ class AP_Form {
         return ob_get_clean();
     }
     
-    /**
-     * ¡FUNCIÓN CORREGIDA!
-     * Se ajustaron los parámetros de la función para que coincidan con los que espera el filtro 'wp_handle_upload'.
-     * Esto soluciona el error fatal que causaba el "error de red".
-     */
     public function optimize_image( $file_info ) {
         $file_path = $file_info['file'];
         
@@ -102,7 +96,7 @@ class AP_Form {
             'method'  => 'POST',
             'headers' => ['Content-Type' => 'application/json'],
             'body'    => json_encode($body),
-            'timeout' => 25
+            'timeout' => 40 // CAMBIO: Aumentado de 25 a 40 segundos.
         ]);
 
         return $response;
@@ -136,33 +130,29 @@ class AP_Form {
         }
     }
 
-private function generate_and_save_ai_tags($post_id, $title) {
-    $options = get_option('ap_options');
-    $api_key = isset($options['api_key']) ? trim($options['api_key']) : '';
-    if (empty($api_key) || empty($title)) return;
+    private function generate_and_save_ai_tags($post_id, $title) {
+        $options = get_option('ap_options');
+        $api_key = isset($options['api_key']) ? trim($options['api_key']) : '';
+        if (empty($api_key) || empty($title)) return;
 
-    // --- PROMPT ACTUALIZADO ---
-    $prompt = "Eres un experto académico de la lengua española especializado en el español del Perú. A partir de las palabras del título del anuncio: '{$title}', genera una lista de 5 a 10 palabras clave nuevas, incluyendo plurales, variaciones de género (masculino/femenino), diminutivos y sinónimos relevantes. Devuelve únicamente la lista de palabras separadas por comas, sin numeración ni texto adicional.";
+        $prompt = "Eres un experto académico de la lengua española especializado en el español del Perú. A partir de las palabras del título del anuncio: '{$title}', genera una lista de 5 a 10 palabras clave nuevas, incluyendo plurales, variaciones de género (masculino/femenino), diminutivos y sinónimos relevantes. Devuelve únicamente la lista de palabras separadas por comas, sin numeración ni texto adicional.";
 
-    $response = $this->call_gemini_api($prompt, $api_key);
+        $response = $this->call_gemini_api($prompt, $api_key);
     
-    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) return;
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) return;
 
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-    if (isset($body['candidates'][0]['content']['parts'][0]['text'])) {
-        $tags_string = trim($body['candidates'][0]['content']['parts'][0]['text']);
-        $tags_array = array_map('trim', explode(',', $tags_string));
-        $tags_array = array_filter($tags_array); 
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        if (isset($body['candidates'][0]['content']['parts'][0]['text'])) {
+            $tags_string = trim($body['candidates'][0]['content']['parts'][0]['text']);
+            $tags_array = array_map('trim', explode(',', $tags_string));
+            $tags_array = array_filter($tags_array); 
 
-        if (!empty($tags_array)) {
-            wp_set_object_terms($post_id, $tags_array, 'ap_ai_tags');
+            if (!empty($tags_array)) {
+                wp_set_object_terms($post_id, $tags_array, 'ap_ai_tags');
+            }
         }
     }
-}
 
-    /**
-     * ¡NUEVO! Revisa el contenido con IA para moderación.
-     */
     private function moderate_content_with_ai($post_id, $title, $message) {
         $options = get_option('ap_options');
         $api_key = isset($options['api_key']) ? trim($options['api_key']) : '';
@@ -199,7 +189,7 @@ private function generate_and_save_ai_tags($post_id, $title) {
         if (!empty($_POST['email']) && !is_email($_POST['email'])) { $errors[] = "El formato del correo electrónico no es válido."; }
         if (!empty($_POST['phone']) && !preg_match('/^[0-9]{9}$/', $_POST['phone'])) { $errors[] = "El celular debe contener 9 dígitos."; }
         if (isset($_FILES['pdf']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK && $_FILES['pdf']['size'] > (200 * 1024)) { $errors[] = '¡Atención! El archivo PDF no puede superar los 200 KB.'; }
-        if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK && $_FILES['video']['size'] > (1500 * 1024)) { $errors[] = '¡Atención! El archivo de Video no puede superar los 1.5 MB.'; }
+        if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK && $_FILES['video']['size'] > (3000 * 1024)) { $errors[] = '¡Atención! El archivo de Video no puede superar los 3.0 MB.'; }
         
         if (!empty($errors)) { wp_send_json_error(['message' => implode('<br>', $errors)]); }
         
@@ -216,7 +206,6 @@ private function generate_and_save_ai_tags($post_id, $title) {
         
         if (is_wp_error($post_id)) { wp_send_json_error(['message' => 'Error al crear el aviso: ' . $post_id->get_error_message()]); }
         
-        // ¡NUEVO! Ejecutar las funciones de IA después de crear el aviso.
         $this->generate_and_save_ai_tags($post_id, $post_title);
         $this->moderate_content_with_ai($post_id, $post_title, $post_content);
 

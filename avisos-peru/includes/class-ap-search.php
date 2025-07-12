@@ -1,7 +1,7 @@
 <?php
 /**
  * Gestiona la funcionalidad de búsqueda, incluyendo el shortcode del formulario.
- * v3.0.0 - Implementados filtros avanzados.
+ * v3.2.0 - Lógica de filtro 'Tipo de Anuncio' ajustada a AND.
  *
  * @package Avisos_Peru
  */
@@ -86,7 +86,7 @@ class AP_Search {
         return ob_get_clean();
     }
     
-public function filter_search_query($query) {
+    public function filter_search_query($query) {
         if ($query->is_main_query() && !is_admin() && ($query->is_search() || $query->is_tax('departamento')) ) {
             
             if (isset($_GET['post_type']) && $_GET['post_type'] === 'aviso') {
@@ -110,16 +110,23 @@ public function filter_search_query($query) {
             $meta_query = $query->get('meta_query') ?: [];
             $meta_query['relation'] = 'AND';
 
+            // --- Lógica de filtro 'Tipo de Anuncio' con relación AND ---
             if (isset($_GET['ad_type']) && is_array($_GET['ad_type']) && !empty($_GET['ad_type'])) {
                 $ad_type_clean = array_map('sanitize_text_field', $_GET['ad_type']);
-                $meta_query[] = [
-                    'key'     => 'ap_ad_type',
-                    'value'   => $ad_type_clean,
-                    'compare' => 'IN',
-                ];
+                
+                // Usamos una sub-consulta con relación AND
+                $ad_type_sub_query = ['relation' => 'AND'];
+                foreach ($ad_type_clean as $type) {
+                    $ad_type_sub_query[] = [
+                        'key'     => 'ap_ad_type',
+                        'value'   => $type,
+                        'compare' => 'LIKE',
+                    ];
+                }
+                $meta_query[] = $ad_type_sub_query;
             }
 
-            // --- ¡CORRECCIÓN! Se eliminan las comas antes de validar ---
+            // --- (el resto de los filtros de precio y atributos permanecen igual) ---
             if (isset($_GET['min_price'])) {
                 $min_price = str_replace(',', '', $_GET['min_price']);
                 if (is_numeric($min_price)) {

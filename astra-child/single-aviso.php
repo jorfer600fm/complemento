@@ -1,7 +1,7 @@
 <?php
 /**
  * Plantilla para mostrar un único "Aviso".
- * v3.0 - Versión final con galería JS y diseño profesional.
+ * v3.2 - Reestructuración de layout y textos mejorados.
  *
  * @package Astra Child Theme
  */
@@ -32,7 +32,11 @@ $datos_aviso = [
     'galeria'      => [],
 ];
 
-// Construir la galería de imágenes
+$video_player_html = '';
+if ($datos_aviso['video_url']) {
+    $video_player_html = wp_video_shortcode(['src' => esc_url($datos_aviso['video_url'])]);
+}
+
 if (has_post_thumbnail()) { $datos_aviso['galeria'][] = get_post_thumbnail_id(); }
 foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
     if ($img_id = get_post_meta($post_id, $key, true)) { $datos_aviso['galeria'][] = $img_id; }
@@ -48,17 +52,23 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                 <div class="ap-columna-principal">
                     <section class="ap-section ap-media-gallery">
                         <div id="ap-main-media-viewer">
-                            <?php if ($datos_aviso['video_url']) : ?>
-                                <?php echo wp_video_shortcode(['src' => esc_url($datos_aviso['video_url'])]); ?>
+                            <?php if ($video_player_html) : ?>
+                                <?php echo $video_player_html; ?>
                             <?php elseif (!empty($datos_aviso['galeria'])) : ?>
-                                <img src="<?php echo esc_url(wp_get_attachment_image_url($datos_aviso['galeria'][0], 'full')); ?>" alt="Vista principal">
+                                <img src="<?php echo esc_url(wp_get_attachment_image_url($datos_aviso['galeria'][0], 'large')); ?>" alt="Vista principal">
                             <?php endif; ?>
                         </div>
 
-                        <?php if (!empty($datos_aviso['galeria']) && count($datos_aviso['galeria']) > 0) : ?>
+                        <?php if ($video_player_html || count($datos_aviso['galeria']) > 1) : ?>
                             <div class="ap-media-thumbnails">
+                                <?php if ($video_player_html) : ?>
+                                    <a href="#" class="ap-media-thumbnail" data-media-type="video">
+                                        <img src="<?php echo esc_url(get_the_post_thumbnail_url($post_id, 'thumbnail')); ?>" alt="Video Thumbnail">
+                                        <span class="ap-video-play-icon">&#9658;</span>
+                                    </a>
+                                <?php endif; ?>
                                 <?php foreach ($datos_aviso['galeria'] as $img_id) : ?>
-                                    <a href="#" class="ap-media-thumbnail" data-full-url="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'full')); ?>">
+                                    <a href="#" class="ap-media-thumbnail" data-media-type="image" data-full-url="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'large')); ?>">
                                         <img src="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'thumbnail')); ?>" alt="Thumbnail">
                                     </a>
                                 <?php endforeach; ?>
@@ -89,10 +99,6 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                     <section class="ap-section ap-mapa">
                         <h3 class="ap-section-title">Ubicación</h3>
                         <div id="ap-map-display" style="height: 400px; width: 100%; border-radius: 8px;"></div>
-                        <div class="ap-share-link-container">
-                             <h4>Enlace para compartir en: Facebook, WhatsApp, y otras redes sociales</h4>
-                             <input type="text" readonly value="<?php echo esc_url(get_permalink()); ?>" id="ap-share-link-input">
-                        </div>
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
                                 const lat = <?php echo esc_js($datos_aviso['mapa']['lat']); ?>;
@@ -102,6 +108,12 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                                 L.marker([lat, lng]).addTo(map);
                             });
                         </script>
+                        
+                        <?php // CAMBIO: Anotación movida aquí ?>
+                        <div class="ap-share-link-container">
+                             <h4>Enlace para compartir en: Facebook, WhatsApp, y otras redes sociales</h4>
+                             <input type="text" readonly value="<?php echo esc_url(get_permalink()); ?>" id="ap-share-link-input">
+                        </div>
                     </section>
                     <?php endif; ?>
 
@@ -149,7 +161,8 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                             <?php endif; ?>
 
                             <?php if ($datos_aviso['website']) : ?>
-                                <a href="<?php echo esc_url($datos_aviso['website']); ?>" target="_blank" rel="noopener noreferrer" class="ap-btn-website">Visitar Sitio Web</a>
+                                <?php // CAMBIO: Texto del botón actualizado ?>
+                                <a href="<?php echo esc_url($datos_aviso['website']); ?>" target="_blank" rel="noopener noreferrer" class="ap-btn-website">Visitar el sitio Web, YouTube o Facebook del anunciante</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -159,7 +172,11 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
         </div>
     </main>
 </div>
-
 <?php 
+if ($video_player_html) {
+    wp_register_script('child-single-aviso-js-vars', '');
+    wp_enqueue_script('child-single-aviso-js-vars');
+    wp_add_inline_script('child-single-aviso-js-vars', 'const ap_video_player_html = ' . json_encode($video_player_html) . ';');
+}
 get_footer(); 
 ?>

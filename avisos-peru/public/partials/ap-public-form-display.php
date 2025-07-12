@@ -1,7 +1,7 @@
 <?php
 /**
  * Muestra el HTML del formulario de envío de avisos.
- * v6.3.0
+ * v6.3.2 - Texto de campo "website" mejorado.
  *
  * @package Avisos_Peru
  */
@@ -72,7 +72,8 @@
         </div>
         
         <div class="ap-form-field">
-            <label for="ap_website">Sitio Web (Opcional)</label>
+            <?php // CAMBIO: Texto de la etiqueta actualizado ?>
+            <label for="ap_website">Si tienes sitio Web, YouTube o Facebook relacionado al anuncio, pegar la URL (Opcional)</label>
             <input type="url" id="ap_website" name="website" placeholder="https://ejemplo.com">
         </div>
         
@@ -148,7 +149,7 @@
             <label for="ap_video" class="ap-file-label">Subir Video</label>
             <input type="file" id="ap_video" name="video" accept="video/*">
             <div class="ap-file-info-placeholder"></div>
-            <small>No debe superar los 1500 KB (1.5 MB).</small>
+            <small>No debe superar los 3000 KB (3.0 MB).</small>
         </div>
         
         <hr>

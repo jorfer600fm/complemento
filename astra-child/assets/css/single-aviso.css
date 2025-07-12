@@ -1,6 +1,8 @@
 /**
  * ===================================================================
- * MÓDULO: PÁGINA DE DETALLE DE AVISO (v2.0 - Versión Final)
+ * MÓDULO: PÁGINA DE DETALLE DE AVISO (v3.3 - Pulido Final)
+ * - Galería de medios 100% visible en escritorio y móvil.
+ * - Lógica de filtros robusta.
  * ===================================================================
  */
 
@@ -15,36 +17,72 @@
 
 /* --- ESTRUCTURA PRINCIPAL --- */
 .ap-detalle-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
 }
+
 @media (min-width: 992px) {
     .ap-detalle-layout {
-        /* Columnas: 60% para contenido, 40% para barra lateral */
-        grid-template-columns: 3fr 2fr;
+        flex-direction: row;
     }
 }
 
-/* --- COLUMNA PRINCIPAL (IZQUIERDA) --- */
-.ap-columna-principal .ap-section {
-    margin-bottom: 2.5em;
+.ap-columna-principal {
+    flex: 2; 
+    min-width: 0;
+    order: 2;
 }
 
-/* Galería de Medios */
+.ap-columna-lateral {
+    flex: 1;
+    min-width: 320px;
+    order: 1;
+}
+
+@media (min-width: 992px) {
+    .ap-columna-principal,
+    .ap-columna-lateral {
+        order: initial;
+    }
+
+    .ap-columna-lateral {
+        position: sticky;
+        top: 40px;
+        align-self: flex-start;
+    }
+}
+
+/* --- GALERÍA DE MEDIOS --- */
 .ap-media-gallery { display: flex; flex-direction: column; gap: 15px; }
-#ap-main-media-viewer { border: 1px solid var(--ap-borde-suave); border-radius: 8px; overflow: hidden; background-color: #000; }
+
+#ap-main-media-viewer { 
+    border: 1px solid var(--ap-borde-suave); 
+    border-radius: 8px; 
+    overflow: hidden; 
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px; /* Altura mínima para evitar que colapse */
+}
+
+/* --- ¡CORRECCIÓN CLAVE! --- */
+/* Esta regla asegura que el contenido se ajuste perfectamente dentro del visor sin recortar */
 #ap-main-media-viewer iframe,
 #ap-main-media-viewer video,
 #ap-main-media-viewer img {
-    width: 100%;
+    max-width: 100%;
+    max-height: 80vh; /* Altura máxima del 80% de la ventana del navegador */
+    width: auto;
     height: auto;
-    aspect-ratio: 16/9;
-    display: block;
+    object-fit: contain;
 }
-#ap-main-media-viewer img { object-fit: contain; background-color: #f0f0f0; }
+
+
 .ap-media-thumbnails { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
 .ap-media-thumbnail {
+    position: relative;
     display: block;
     width: 100%;
     height: 80px;
@@ -53,40 +91,43 @@
     overflow: hidden;
     cursor: pointer;
     transition: border-color 0.2s;
+    background-color: #000;
 }
 .ap-media-thumbnail:hover { border-color: var(--ap-color-primario); }
 .ap-media-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Secciones de Contenido */
+.ap-video-play-icon {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px; color: white;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 50%; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; line-height: 40px; padding-left: 4px;
+}
+
+/* --- OTRAS SECCIONES (SIN CAMBIOS) --- */
+.ap-columna-principal .ap-section { margin-bottom: 2.5em; }
 .ap-section h3.ap-section-title { font-size: 1.8em; color: var(--ap-texto-principal); margin-top: 0; margin-bottom: 0.8em; padding-bottom: 0.5em; border-bottom: 2px solid var(--ap-color-secundario); }
 .ap-detalles-lista ul { list-style: none; padding: 0; margin: 0; }
 .ap-detalles-lista li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--ap-borde-suave); font-size: 1.1em; }
 .ap-detalles-lista li strong { color: var(--ap-texto-principal); }
-
-/* --- BARRA LATERAL (DERECHA) --- */
-.ap-columna-lateral { position: sticky; top: 40px; }
 .ap-info-box { background-color: #fff; border: 1px solid var(--ap-borde-suave); border-radius: 8px; padding: 25px; margin-bottom: 20px; }
 h1.ap-titulo-principal { font-size: 2.0em; line-height: 1.3; margin-top: 0; margin-bottom: 0.5em; color: var(--ap-texto-principal); }
-.ap-badges-container { display: flex; gap: 10px; margin-bottom: 20px; }
+.ap-badges-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 .ap-badge-detalle { padding: 4px 12px; border-radius: 50px; font-weight: bold; font-size: 0.8em; }
 .ap-badge-destacado { background-color: #fef9c3; color: #a16207; border: 1px solid #fde047; }
 .ap-badge-verificado { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 .ap-precio { font-size: 2.5em; font-weight: 700; color: var(--ap-color-secundario); margin-bottom: 20px; }
 .ap-precio span.ap-unidad { font-size: 0.5em; font-weight: 400; color: var(--ap-texto-secundario); }
 .ap-autor { font-size: 1.1em; margin-bottom: 20px; }
-
-/* Botones */
 .ap-botones-contacto a { display: block; width: 100%; text-align: center; padding: 15px; margin-bottom: 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 1.1em; transition: opacity 0.3s; }
 .ap-botones-contacto a:hover { opacity: 0.85; }
 a.ap-btn-whatsapp { background-color: #25D366; color: #fff; }
 a.ap-btn-llamar { background-color: var(--ap-color-primario); color: #fff; }
 a.ap-btn-pdf { background-color: #fff; color: var(--ap-color-primario); border: 2px solid var(--ap-color-primario); }
 a.ap-btn-website { background-color: #fff; color: var(--ap-texto-principal); border: 2px solid var(--ap-texto-principal); }
-
-/* Sección de "Acción inmediata" */
 .ap-accion-inmediata { text-align: center; color: var(--ap-texto-secundario); font-size: 0.9em; margin-top: 25px; margin-bottom: 15px; }
-
-/* Sección Enlace para Compartir */
 .ap-share-link-container { margin-top: 30px; }
 .ap-share-link-container h4 { text-align: center; font-size: 1em; color: var(--ap-texto-secundario); margin-bottom: 10px; }
 #ap-share-link-input { width: 100%; padding: 10px; text-align: center; background-color: var(--ap-fondo-claro); border: 1px dashed var(--ap-borde-suave); border-radius: 6px; color: var(--ap-color-secundario); font-family: monospace; }

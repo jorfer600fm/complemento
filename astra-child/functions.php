@@ -6,6 +6,12 @@
  */
 
 /**
+ * Carga de archivos de funciones adicionales.
+ */
+require_once get_stylesheet_directory() . '/includes/shortcodes.php';
+
+
+/**
  * Carga las hojas de estilo y scripts del tema hijo.
  */
 add_action( 'wp_enqueue_scripts', 'mi_tema_hijo_enqueue_assets', 20 );
@@ -17,13 +23,24 @@ function mi_tema_hijo_enqueue_assets() {
     wp_enqueue_style( 'child-form-publicacion', get_stylesheet_directory_uri() . '/assets/css/form-publicacion.css', [ 'child-variables-style' ], filemtime( get_stylesheet_directory() . '/assets/css/form-publicacion.css' ) );
     wp_enqueue_style( 'child-componente-busqueda', get_stylesheet_directory_uri() . '/assets/css/componente-busqueda.css', [ 'child-variables-style' ], filemtime( get_stylesheet_directory() . '/assets/css/componente-busqueda.css' ) );
 
-    // Cargar estilos de la página de resultados SOLO cuando sea una búsqueda.
-    if ( is_search() ) {
+    // Cargar estilos de resultados si es una página de búsqueda O si contiene el shortcode de avisos recientes.
+    global $post;
+    if ( is_search() || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'avisos_recientes' ) ) ) {
         wp_enqueue_style( 'child-resultados-busqueda', get_stylesheet_directory_uri() . '/assets/css/resultados-busqueda.css', [ 'child-variables-style' ], filemtime( get_stylesheet_directory() . '/assets/css/resultados-busqueda.css' ) );
-        
-        // Cargar JS de mejoras de búsqueda SOLO en la página de resultados.
+    }
+
+    // Cargar JS de mejoras de búsqueda SOLO en la página de resultados.
+    if ( is_search() ) {
         wp_enqueue_script( 'child-search-enhancements', get_stylesheet_directory_uri() . '/assets/js/search-enhancements.js', [], filemtime( get_stylesheet_directory() . '/assets/js/search-enhancements.js' ), true );
     }
+    
+    // CAMBIO: Cargar el nuevo script de mejoras globales en todo el sitio.
+    wp_enqueue_script( 'child-global-enhancements', get_stylesheet_directory_uri() . '/assets/js/global-enhancements.js', [], filemtime( get_stylesheet_directory() . '/assets/js/global-enhancements.js' ), true );
+    
+    // CAMBIO: Añadir estilos inline para la animación del error de búsqueda.
+    $css_inline = ".ap-input-error { border-color: red !important; animation: shake 0.5s; } @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }";
+    wp_add_inline_style( 'child-componente-busqueda', $css_inline );
+
 
     // Carga de scripts para el mapa en la página de detalle.
     if ( is_singular('aviso') ) {
@@ -38,6 +55,8 @@ function mi_tema_hijo_enqueue_assets() {
         }
     }
 }
+
+// ... (El resto del archivo functions.php permanece sin cambios) ...
 
 /**
  * Crea un shortcode [ap_filtros_busqueda] para mostrar el formulario de filtros.
