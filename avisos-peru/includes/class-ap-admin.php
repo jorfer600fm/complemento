@@ -1,8 +1,7 @@
 <?php
 /**
  * Gestiona el área de administración del plugin.
- * v7.0.0 - Filtros de Búsqueda Avanzados
- * - Renombrados los campos de "Distintivo" a "Aviso destacado" y "Aviso verificado".
+ * v7.1.0 - Añadida la carga de scripts para la página de diagnóstico.
  *
  * @package Avisos_Peru
  */
@@ -18,20 +17,30 @@ class AP_Admin {
     }
 
     public function init() {
-        add_action( 'admin_init', [ $this, 'load_options' ] );
-        add_action( 'admin_init', [ $this, 'register_settings' ] );
-        add_action( 'admin_menu', [ $this, 'add_options_page' ] );
-        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
-        add_action( 'add_meta_boxes', [ $this, 'add_meta_boxes' ] );
-        add_action( 'save_post_aviso', [ $this, 'save_meta_boxes' ], 10, 2 );
-        add_action( 'transition_post_status', [ $this, 'on_status_transition' ], 10, 3 );
-        add_action( 'admin_post_ap_approve_ad', [ $this, 'handle_approve_ad' ] );
-        add_action( 'admin_post_ap_reject_ad', [ $this, 'handle_reject_ad' ] );
-        add_action( 'admin_post_ap_confirm_payment', [ $this, 'handle_confirm_payment' ] );
-        add_action( 'admin_notices', [ $this, 'show_admin_notices' ] );
-        add_filter( 'manage_aviso_posts_columns', [ $this, 'add_admin_columns' ] );
-        add_action( 'manage_aviso_posts_custom_column', [ $this, 'render_admin_columns' ], 10, 2 );
-        add_filter( 'manage_edit-aviso_sortable_columns', [ $this, 'make_columns_sortable' ] );
+        add_action('admin_init', [$this, 'load_options']);
+        add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_menu', [$this, 'add_options_page']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
+        add_action('add_meta_boxes', [$this, 'add_meta_boxes']);
+        add_action('save_post_aviso', [$this, 'save_meta_boxes'], 10, 2);
+        add_action('transition_post_status', [$this, 'on_status_transition'], 10, 3);
+        add_action('admin_post_ap_approve_ad', [$this, 'handle_approve_ad']);
+        add_action('admin_post_ap_reject_ad', [$this, 'handle_reject_ad']);
+        add_action('admin_post_ap_confirm_payment', [$this, 'handle_confirm_payment']);
+        add_action('admin_notices', [$this, 'show_admin_notices']);
+        add_filter('manage_aviso_posts_columns', [$this, 'add_admin_columns']);
+        add_action('manage_aviso_posts_custom_column', [$this, 'render_admin_columns'], 10, 2);
+        add_filter('manage_edit-aviso_sortable_columns', [$this, 'make_columns_sortable']);
+        add_action('wp_ajax_ap_clear_error_log', [$this, 'clear_error_log']);
+    }
+
+    public function clear_error_log() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error();
+        }
+        check_ajax_referer('ap_diagnostics_nonce', 'nonce');
+        delete_option('ap_error_log');
+        wp_send_json_success();
     }
 
     public function load_options() {
@@ -82,9 +91,21 @@ class AP_Admin {
     
     public function enqueue_admin_assets( $hook ) {
         global $post;
+        $screen = get_current_screen();
+
+        // Scripts para el editor de avisos
         if ( ( $hook == 'post-new.php' || $hook == 'post.php' ) && isset( $post->post_type ) && $post->post_type == 'aviso' ) {
             wp_enqueue_media();
             wp_enqueue_script( 'ap-admin-uploader', AP_PLUGIN_URL . 'admin/js/ap-admin-uploader.js', [ 'jquery', 'media-upload' ], $this->version, true );
+        }
+
+        // Scripts para la nueva página de diagnóstico
+        if ($screen->id === 'aviso_page_ap-diagnostics') {
+            wp_enqueue_script('ap-admin-diagnostics', AP_PLUGIN_URL . 'admin/js/ap-admin-diagnostics.js', ['jquery'], $this->version, true);
+            // Añadimos un nonce para la seguridad de las peticiones AJAX
+            wp_localize_script('ap-admin-diagnostics', 'ap_diagnostics_ajax', [
+                'nonce' => wp_create_nonce('ap_diagnostics_nonce')
+            ]);
         }
     }
     
@@ -197,7 +218,7 @@ class AP_Admin {
         echo '</div>';
     }
 
-public function render_details_meta_box( $post ) {
+    public function render_details_meta_box( $post ) {
         wp_nonce_field( 'ap_save_meta_boxes', 'ap_details_nonce' );
         echo '<style>.ap-meta-box-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 20px; } .ap-meta-box-grid .ap-meta-box-field { padding: 10px 0; } .ap-meta-box-grid .ap-meta-box-field label { display: block; font-weight: bold; margin-bottom: 5px; } .ap-meta-box-grid input[type=text], .ap-meta-box-grid input[type=email], .ap-meta-box-grid input[type=tel], .ap-meta-box-grid input[type=url], .ap-meta-box-grid input[type=date], .ap-meta-box-grid input[type=number], .ap-meta-box-grid select, .ap-meta-box-grid textarea { width: 100%; padding: 8px; } .ap-meta-box-grid .grid-col-full { grid-column: 1 / -1; } .ap-section-header { grid-column: 1 / -1; background: #f0f0f1; padding: 10px; margin: 20px -12px 10px; font-size: 1.2em; border-top: 1px solid #c3c4c7; border-bottom: 1px solid #c3c4c7; }</style>';
         
@@ -212,11 +233,9 @@ public function render_details_meta_box( $post ) {
         $distintivos = [
             'ap_distintivo_1' => 'Aviso Destacado',
             'ap_distintivo_2' => 'Aviso Verificado',
-            'ap_distintivo_3' => 'Distintivo Adicional'
         ];
         foreach ( $distintivos as $key => $label ) {
             $value = get_post_meta( $post->ID, $key, true );
-            // --- ¡CORRECCIÓN! Se eliminó el placeholder ---
             echo '<div class="ap-meta-box-field"><label for="' . esc_attr( $key ) . '">' . esc_html( $label ) . '</label><input type="text" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" /></div>';
         }
 
@@ -280,7 +299,6 @@ public function render_details_meta_box( $post ) {
         if ( ! current_user_can( 'edit_post', $post_id ) ) return;
         if ( $post->post_type != 'aviso' ) return;
         
-        // Guardar tipo de anuncio (checkbox)
         if (isset($_POST['ap_ad_type']) && is_array($_POST['ap_ad_type'])) {
             $sanitized_ad_types = array_map('sanitize_text_field', $_POST['ap_ad_type']);
             update_post_meta($post_id, 'ap_ad_type', $sanitized_ad_types);
@@ -288,23 +306,14 @@ public function render_details_meta_box( $post ) {
             delete_post_meta($post_id, 'ap_ad_type');
         }
 
-        // MEJORA: Sanitización más estricta por tipo de campo
         $meta_to_save = [
-            'ap_distintivo_1' => 'sanitize_text_field',
-            'ap_distintivo_2' => 'sanitize_text_field',
-            'ap_distintivo_3' => 'sanitize_text_field',
-            'ap_price'        => 'floatval',
-            'ap_unit'         => 'sanitize_text_field',
-            'ap_name'         => 'sanitize_text_field',
-            'ap_email'        => 'sanitize_email',
-            'ap_phone'        => 'sanitize_text_field',
-            'ap_whatsapp'     => 'sanitize_text_field',
-            'ap_website'      => 'esc_url_raw',
-            'ap_address'      => 'sanitize_text_field',
-            'ap_map_lat'      => 'sanitize_text_field',
-            'ap_map_lng'      => 'sanitize_text_field',
-            'ap_expiry_date'  => 'sanitize_text_field',
-            '_ap_notas_internas' => 'sanitize_textarea_field',
+            'ap_distintivo_1' => 'sanitize_text_field', 'ap_distintivo_2' => 'sanitize_text_field',
+            'ap_price' => 'floatval', 'ap_unit' => 'sanitize_text_field',
+            'ap_name' => 'sanitize_text_field', 'ap_email' => 'sanitize_email',
+            'ap_phone' => 'sanitize_text_field', 'ap_whatsapp' => 'sanitize_text_field',
+            'ap_website' => 'esc_url_raw', 'ap_address' => 'sanitize_text_field',
+            'ap_map_lat' => 'sanitize_text_field', 'ap_map_lng' => 'sanitize_text_field',
+            'ap_expiry_date' => 'sanitize_text_field', '_ap_notas_internas' => 'wp_kses_post',
         ];
         
         foreach ( $meta_to_save as $key => $sanitizer ) {
@@ -314,7 +323,6 @@ public function render_details_meta_box( $post ) {
             }
         }
         
-        // Guardar archivos (IDs de adjuntos)
         $file_fields = ['ap_photo_2', 'ap_photo_3', 'ap_pdf', 'ap_video'];
         foreach ( $file_fields as $field ) {
             if ( isset( $_POST[$field] ) ) {

@@ -1,7 +1,7 @@
 <?php
 /**
  * Gestiona el formulario público de envío de avisos.
- * v6.4.2 - Aumentado el timeout de la API de IA.
+ * v6.5.0 - Añadido registro de errores de API.
  *
  * @package Avisos_Peru
  */
@@ -46,45 +46,28 @@ class AP_Form {
         return ob_get_clean();
     }
     
-    /**
-     * Optimiza las imágenes subidas.
-     * MEJORA: Ahora solo redimensiona la imagen original (JPG/PNG) para que Bunny.net la convierta a WebP.
-     */
     public function optimize_image( $file_info ) {
         $file_path = $file_info['file'];
-        
-        // Solo procesar si es una imagen
         $mime_type = mime_content_type($file_path);
         if (strpos($mime_type, 'image') === false) {
             return $file_info;
         }
-
         $image_editor = wp_get_image_editor( $file_path );
         if ( is_wp_error( $image_editor ) ) {
             return $file_info;
         }
-
-        $max_dimension = 1920; // Dimensión máxima (ancho o alto)
-        $quality = 75; // Calidad de compresión
-
-        // Redimensionar si es necesario
+        $max_dimension = 1920;
+        $quality = 75;
         $size = $image_editor->get_size();
         if ($size['width'] > $max_dimension || $size['height'] > $max_dimension) {
             $image_editor->resize( $max_dimension, $max_dimension, false );
         }
-
-        // Establecer la calidad de compresión
         $image_editor->set_quality( $quality );
-
-        // Guardar la imagen optimizada, sobrescribiendo el archivo original
         $saved_image = $image_editor->save($file_path);
-
-        // Si el guardado fue exitoso, la información del archivo ya está actualizada
         if (!is_wp_error($saved_image)) {
             $file_info['file'] = $saved_image['path'];
             $file_info['url'] = str_replace(wp_basename($file_info['url']), wp_basename($saved_image['path']), $file_info['url']);
         }
-        
         return $file_info;
     }
 
@@ -96,8 +79,18 @@ class AP_Form {
             'method'  => 'POST',
             'headers' => ['Content-Type' => 'application/json'],
             'body'    => json_encode($body),
-            'timeout' => 40 // CAMBIO: Aumentado de 25 a 40 segundos.
+            'timeout' => 25
         ]);
+
+        if (is_wp_error($response)) {
+            // NUEVO: Registrar el error
+            AP_Diagnostics::log_error('Error de conexión con Gemini: ' . $response->get_error_message());
+        } elseif (wp_remote_retrieve_response_code($response) !== 200) {
+            // NUEVO: Registrar el error
+            $body = json_decode(wp_remote_retrieve_body($response), true);
+            $error_message = $body['error']['message'] ?? 'Respuesta inesperada.';
+            AP_Diagnostics::log_error('Error en API de Gemini (Código: ' . wp_remote_retrieve_response_code($response) . '): ' . $error_message);
+        }
 
         return $response;
     }
@@ -158,7 +151,7 @@ class AP_Form {
         $api_key = isset($options['api_key']) ? trim($options['api_key']) : '';
         if (empty($api_key) || (empty($title) && empty($message))) return;
 
-        $prompt = "Eres un moderador de contenido para un sitio de clasificados de Perú. Tu tarea es analizar el siguiente título y mensaje de un anuncio.\n\nTítulo del Anuncio: '{$title}'\n\nMensaje del Anuncio: '{$message}'\n\nRevisa el texto en busca de cualquier contenido que sea explícitamente obsceno, ilegal, promueva el odio, la violencia o sea claramente una estafa. No seas demasiado sensible; permite lenguaje coloquial o informal que no viole las reglas.\n\nSi el contenido viola claramente las políticas, responde únicamente con la palabra 'ALERTA'. Si el contenido es aceptable, no respondas nada (devuelve una cadena vacía).";
+        $prompt = "Eres un moderador de contenido para un sitio de clasificados de Perú. Tu tarea es analizar el siguiente título y mensaje de un anuncio.\n\nTítulo del Anuncio: '{$title}'\n\nMensaje del Anuncio: '{$message}'\n\nRevisa el texto en busca de cualquier contenido que sea explícitamente de: productos milagrosos; animales de flora y fauna silvestre; armas, municiones y explosivos; patrimonio cultural; contenido ofensivo o discriminatorio; drogas ilegales; pornografía. No seas sensible; permite lenguaje coloquial o informal que no viole las reglas.\n\nSi el contenido viola claramente las políticas, responde únicamente con la palabra 'ALERTA'. Si el contenido es aceptable, no respondas nada (devuelve una cadena vacía).";
 
         $response = $this->call_gemini_api($prompt, $api_key);
 
@@ -190,7 +183,7 @@ class AP_Form {
         if (!empty($_POST['phone']) && !preg_match('/^[0-9]{9}$/', $_POST['phone'])) { $errors[] = "El celular debe contener 9 dígitos."; }
         if (!empty($_POST['website']) && !filter_var($_POST['website'], FILTER_VALIDATE_URL)) { $errors[] = "La URL del sitio web no es válida."; }
         if (isset($_FILES['pdf']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK && $_FILES['pdf']['size'] > (200 * 1024)) { $errors[] = '¡Atención! El archivo PDF no puede superar los 200 KB.'; }
-        if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK && $_FILES['video']['size'] > (3000 * 1024)) { $errors[] = '¡Atención! El archivo de Video no puede superar los 3.0 MB.'; }
+        if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK && $_FILES['video']['size'] > (5000 * 1024)) { $errors[] = '¡Atención! El archivo de Video no puede superar los 5.0 MB.'; }
         
         if (!empty($errors)) { wp_send_json_error(['message' => implode('<br>', $errors)]); }
         
@@ -215,7 +208,6 @@ class AP_Form {
             update_post_meta($post_id, 'ap_ad_type', $sanitized_ad_types);
         }
         
-        // MEJORA: Validación y sanitización más específica por campo
         if (isset($_POST['price']) && !empty($_POST['price'])) {
             $price_clean = preg_replace('/[^0-9.]/', '', $_POST['price']);
             update_post_meta($post_id, 'ap_price', floatval($price_clean));

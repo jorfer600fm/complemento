@@ -204,3 +204,15 @@ function ap_fix_image_rotation( $file ) {
     }
     return $file;
 }
+/**
+ * Muestra un botón para desplegar los filtros en la vista móvil de la página de resultados.
+ */
+add_action('astra_content_before', 'ap_display_show_filters_button_on_mobile', 15);
+function ap_display_show_filters_button_on_mobile()
+{
+    if (is_search()) {
+        echo '<div class="ap-mobile-filter-trigger-container">';
+        echo '<button id="ap-mobile-filter-trigger" class="ap-button">Mostrar Filtros</button>';
+        echo '</div>';
+    }
+}

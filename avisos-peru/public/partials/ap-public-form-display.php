@@ -1,7 +1,7 @@
 <?php
 /**
  * Muestra el HTML del formulario de envío de avisos.
- * v6.3.2 - Texto de campo "website" mejorado.
+ * v6.3.4 - Añadido escapado de salida para seguridad en el campo de departamentos.
  *
  * @package Avisos_Peru
  */
@@ -18,8 +18,11 @@
         <div class="ap-form-field">
             <label for="ap_message">Mensaje <span class="ap-required">*</span></label>
             <textarea id="ap_message" name="message" rows="6" required></textarea>
-            <small>Palabras restantes: <span id="ap_message_word_counter">150</span></small>
-            <button type="button" id="ap-ai-button" disabled>💡 Ayuda IA para Mensaje</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <small>Palabras restantes: <span id="ap_message_word_counter">150</span></small>
+                <button type="button" id="ap-ai-button" disabled>💡 Ayuda IA para Mensaje</button>
+            </div>
+            <small style="text-align: right; display: block;">Se recomienda tener buena señal de internet</small>
         </div>
 
         <div class="ap-form-field">
@@ -51,7 +54,7 @@
         <h4>Información de Contacto</h4>
 
         <div class="ap-form-field">
-            <label for="ap_name">Sólo primer nombre y primer apellido <span class="ap-required">*</span></label>
+            <label for="ap_name">Sólo primer nombre y primer apellido (No será difundido)<span class="ap-required">*</span></label>
             <input type="text" id="ap_name" name="name" required>
         </div>
 
@@ -72,7 +75,6 @@
         </div>
         
         <div class="ap-form-field">
-            <?php // CAMBIO: Texto de la etiqueta actualizado ?>
             <label for="ap_website">Si tienes sitio Web, YouTube o Facebook relacionado al anuncio, pegar la URL (Opcional)</label>
             <input type="url" id="ap_website" name="website" placeholder="https://ejemplo.com">
         </div>
@@ -87,7 +89,10 @@
                     <option value="">Selecciona un departamento</option>
                     <?php
                     $departamentos = ['Amazonas', 'Áncash', 'Apurímac', 'Arequipa', 'Ayacucho', 'Cajamarca', 'Callao', 'Cusco', 'Huancavelica', 'Huánuco', 'Ica', 'Junín', 'La Libertad', 'Lambayeque', 'Lima', 'Loreto', 'Madre de Dios', 'Moquegua', 'Pasco', 'Piura', 'Puno', 'San Martín', 'Tacna', 'Tumbes', 'Ucayali'];
-                    foreach ($departamentos as $dept) { echo "<option value='{$dept}'>{$dept}</option>"; }
+                    foreach ($departamentos as $dept) {
+                        // AÑADIDO: Escapado de salida para seguridad. No afecta el diseño.
+                        echo "<option value='" . esc_attr($dept) . "'>" . esc_html($dept) . "</option>";
+                    }
                     ?>
                 </select>
             </div>
@@ -114,7 +119,7 @@
         </div>
         
         <div class="ap-form-field">
-             <label for="ap_expiry_date">Fecha de Vencimiento <span class="ap-required">*</span></label>
+             <label for="ap_expiry_date">Hasta qué fecha desea que se publique su Anuncio <span class="ap-required">*</span></label>
              <input type="date" id="ap_expiry_date" name="expiry_date" required>
              <small>Nota: de preferencia seleccionar menos de 30 días</small>
         </div>
@@ -126,16 +131,19 @@
             <label for="ap_photo_1" class="ap-file-label">Foto Principal</label>
             <input type="file" id="ap_photo_1" name="photo_1" accept="image/jpeg, image/png, image/webp">
             <div class="ap-file-info-placeholder"></div>
+            <small>Sube fotos de menos de 1.0 MB para una carga más rápida.</small>
         </div>
         <div class="ap-form-field ap-file-upload-wrapper">
             <label for="ap_photo_2" class="ap-file-label">Foto 2</label>
             <input type="file" id="ap_photo_2" name="photo_2" accept="image/jpeg, image/png, image/webp">
             <div class="ap-file-info-placeholder"></div>
+            <small>Sube fotos de menos de 1.0 MB para una carga más rápida.</small>
         </div>
         <div class="ap-form-field ap-file-upload-wrapper">
             <label for="ap_photo_3" class="ap-file-label">Foto 3</label>
             <input type="file" id="ap_photo_3" name="photo_3" accept="image/jpeg, image/png, image/webp">
             <div class="ap-file-info-placeholder"></div>
+            <small>Sube fotos de menos de 1.0 MB para una carga más rápida.</small>
         </div>
 
         <div class="ap-form-field ap-file-upload-wrapper">
@@ -149,7 +157,7 @@
             <label for="ap_video" class="ap-file-label">Subir Video</label>
             <input type="file" id="ap_video" name="video" accept="video/*">
             <div class="ap-file-info-placeholder"></div>
-            <small>No debe superar los 3000 KB (3.0 MB).</small>
+            <small>Subir máx. 5.0 MB. Para mejor resultado, grabar en 480p de resolución, video de 30 segundos en promedio y usa un compresor de video antes de subirlo.</small>
         </div>
         
         <hr>

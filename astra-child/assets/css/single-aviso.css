@@ -1,6 +1,6 @@
 /**
  * ===================================================================
- * MÓDULO: PÁGINA DE DETALLE DE AVISO (v5.0 - Estrategia de Contenedor Predecible)
+ * MÓDULO: PÁGINA DE DETALLE DE AVISO (v5.2 - Añadido estilo de botón de email)
  * ===================================================================
  */
 
@@ -54,7 +54,6 @@
 /* --- GALERÍA DE MEDIOS --- */
 .ap-media-gallery { display: flex; flex-direction: column; gap: 15px; }
 
-/* SOLUCIÓN: Se asigna una altura fija y predecible al contenedor. */
 #ap-main-media-viewer { 
     position: relative;
     border: 1px solid var(--ap-borde-suave); 
@@ -62,7 +61,7 @@
     overflow: hidden; 
     background-color: #f0f0f0;
     width: 100%;
-    height: 60vh; /* Altura fija: 60% de la altura de la ventana. */
+    height: 60vh;
 }
 
 #ap-main-media-viewer iframe,
@@ -73,7 +72,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* El contenido se adapta al contenedor. */
+    object-fit: contain;
 }
 
 .ap-media-thumbnails { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
@@ -100,11 +99,16 @@
 .ap-video-play-icon {
     position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 24px; color: white;
+    font-size: 32px;
+    color: white;
     background-color: rgba(0,0,0,0.5);
-    border-radius: 50%; width: 40px; height: 40px;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
     display: flex; align-items: center; justify-content: center;
-    pointer-events: none; line-height: 40px; padding-left: 4px;
+    pointer-events: none;
+    line-height: 50px;
+    padding-left: 5px;
 }
 
 /* --- OTRAS SECCIONES --- */
@@ -126,6 +130,7 @@ h1.ap-titulo-principal { font-size: 2.0em; line-height: 1.3; margin-top: 0; marg
 .ap-botones-contacto a:hover { opacity: 0.85; }
 a.ap-btn-whatsapp { background-color: #25D366; color: #fff; }
 a.ap-btn-llamar { background-color: var(--ap-color-primario); color: #fff; }
+a.ap-btn-email { background-color: #6c757d; color: #fff; }
 a.ap-btn-pdf { background-color: #fff; color: var(--ap-color-primario); border: 2px solid var(--ap-color-primario); }
 a.ap-btn-website { background-color: #fff; color: var(--ap-texto-principal); border: 2px solid var(--ap-texto-principal); }
 .ap-accion-inmediata { text-align: center; color: var(--ap-texto-secundario); font-size: 0.9em; margin-top: 25px; margin-bottom: 15px; }

@@ -1,7 +1,7 @@
 <?php
 /**
  * Plantilla para mostrar un único "Aviso".
- * v4.0 - Lógica de carga inicial: Mostrar siempre la imagen por defecto.
+ * v4.3 - CORRECCIÓN: Restaurada la estructura completa de la página.
  *
  * @package Astra Child Theme
  */
@@ -18,6 +18,7 @@ $datos_aviso = [
     'unidad'       => get_post_meta($post_id, 'ap_unit', true),
     'telefono'     => get_post_meta($post_id, 'ap_phone', true),
     'whatsapp'     => get_post_meta($post_id, 'ap_whatsapp', true),
+    'email'        => get_post_meta($post_id, 'ap_email', true),
     'website'      => get_post_meta($post_id, 'ap_website', true),
     'pdf_url'      => wp_get_attachment_url(get_post_meta($post_id, 'ap_pdf', true)),
     'video_url'    => wp_get_attachment_url(get_post_meta($post_id, 'ap_video', true)),
@@ -55,7 +56,6 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                     <section class="ap-section ap-media-gallery">
                         <div id="ap-main-media-viewer">
                             <?php
-                            // LÓGICA MODIFICADA: Mostrar siempre la primera imagen de la galería al cargar.
                             if (!empty($datos_aviso['galeria'])) {
                                 $initial_image_id = $datos_aviso['galeria'][0];
                                 echo '<img src="' . esc_url(wp_get_attachment_image_url($initial_image_id, 'large')) . '" alt="Vista principal">';
@@ -65,16 +65,14 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
 
                         <?php if ($video_player_html || count($datos_aviso['galeria']) > 1) : ?>
                             <div class="ap-media-thumbnails">
-                                <?php // La miniatura del video se muestra si existe un video.
-                                if ($video_player_html) : ?>
+                                <?php if ($video_player_html) : ?>
                                     <a href="#" class="ap-media-thumbnail" data-media-type="video">
                                         <img src="<?php echo esc_url(get_the_post_thumbnail_url($post_id, 'thumbnail')); ?>" alt="Video Thumbnail">
-                                        <span class="ap-video-play-icon">&#9658;</span>
+                                        <span class="ap-video-play-icon">&#9654;</span>
                                     </a>
                                 <?php endif; ?>
 
-                                <?php // Las miniaturas de las imágenes se muestran si hay imágenes.
-                                foreach ($datos_aviso['galeria'] as $img_id) : ?>
+                                <?php foreach ($datos_aviso['galeria'] as $img_id) : ?>
                                     <a href="#" class="ap-media-thumbnail" data-media-type="image" data-full-url="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'large')); ?>">
                                         <img src="<?php echo esc_url(wp_get_attachment_image_url($img_id, 'thumbnail')); ?>" alt="Thumbnail">
                                     </a>
@@ -149,7 +147,7 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
                             </div>
                         <?php endif; ?>
 
-                        <p class="ap-autor">Publicado por: <strong><?php echo esc_html($datos_aviso['autor']); ?></strong></p>
+                        <p class="ap-autor">Publicado por:</p>
 
                         <p class="ap-accion-inmediata">Para acción inmediata haz clic en los contactos</p>
 
@@ -160,6 +158,10 @@ foreach (['ap_photo_2', 'ap_photo_3'] as $key) {
 
                             <?php if ($datos_aviso['telefono']) : ?>
                                 <a href="tel:<?php echo esc_attr($datos_aviso['telefono']); ?>" class="ap-btn-llamar">Llamar (<?php echo esc_html($datos_aviso['telefono']); ?>)</a>
+                            <?php endif; ?>
+                            
+                            <?php if ($datos_aviso['email']) : ?>
+                                <a href="mailto:<?php echo esc_attr($datos_aviso['email']); ?>" class="ap-btn-email">Correo de contacto (<?php echo esc_html($datos_aviso['email']); ?>)</a>
                             <?php endif; ?>
 
                              <?php if ($datos_aviso['pdf_url']) : ?>

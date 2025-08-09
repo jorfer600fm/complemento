@@ -64,3 +64,23 @@ document.addEventListener('DOMContentLoaded', function() {
         formatNumber(maxPriceInput);
     }
 });
+// --- Lógica para mostrar/ocultar filtros en móvil ---
+    const filterTriggerButton = document.getElementById('ap-mobile-filter-trigger');
+    const sidebar = document.getElementById('secondary'); // El ID de la barra lateral de Astra
+
+    if (filterTriggerButton && sidebar) {
+        // Ocultar la sidebar por defecto en móvil (el CSS se encargará de esto)
+        
+        filterTriggerButton.addEventListener('click', function() {
+            sidebar.classList.toggle('ap-mobile-filters-visible');
+        });
+
+        // Opcional: Ocultar al hacer clic en "Aplicar Filtros"
+        const applyFiltersButton = sidebar.querySelector('.ap-apply-filters-btn');
+        if (applyFiltersButton) {
+            applyFiltersButton.addEventListener('click', function() {
+                // No es necesario el preventDefault porque el formulario debe enviarse
+                sidebar.classList.remove('ap-mobile-filters-visible');
+            });
+        }
+    }

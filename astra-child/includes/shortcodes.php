@@ -1,7 +1,7 @@
 <?php
 /**
  * Archivo para alojar los shortcodes personalizados del tema hijo.
- * v1.0.0
+ * v1.1.0 - Implementado cacheo con Transients para el shortcode de avisos recientes.
  *
  * @package Astra Child Theme
  */
@@ -14,8 +14,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Shortcode [avisos_recientes].
  * Muestra los 5 últimos avisos con pago confirmado.
+ * USA CACHEO (TRANSIENT) POR 15 MINUTOS.
  */
 function ap_shortcode_avisos_recientes() {
+    // Definimos un nombre único para nuestra caché (transient)
+    $transient_name = 'ap_recent_ads_cache';
+
+    // 1. Intentamos obtener los resultados desde la caché
+    $cached_html = get_transient( $transient_name );
+
+    // Si encontramos resultados en la caché, los devolvemos directamente.
+    if ( false !== $cached_html ) {
+        return $cached_html;
+    }
+
+    // 2. Si no hay nada en la caché, ejecutamos la consulta a la base de datos.
     $args = [
         'post_type'      => 'aviso',
         'post_status'    => 'publish',
@@ -97,13 +110,19 @@ function ap_shortcode_avisos_recientes() {
             <?php
         }
         echo '</div>';
-    } else {
-        // Opcional: Si no hay avisos que mostrar, no muestra nada.
-        // echo '<p>No hay avisos recientes para mostrar.</p>';
-    }
+    } 
+    // No es necesario un "else", si no hay posts, simplemente no muestra nada.
 
     wp_reset_postdata();
 
-    return ob_get_clean();
+    // Guardamos el HTML generado en la variable $output
+    $output = ob_get_clean();
+
+    // 3. Guardamos el resultado en la caché (transient) por 15 minutos.
+    // 15 * MINUTE_IN_SECONDS es una constante de WordPress para facilitar la lectura.
+    set_transient( $transient_name, $output, 15 * MINUTE_IN_SECONDS );
+    
+    // Devolvemos el resultado
+    return $output;
 }
 add_shortcode( 'avisos_recientes', 'ap_shortcode_avisos_recientes' );
